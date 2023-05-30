@@ -19,6 +19,11 @@ dependencies {
     // Weaviate Client
     implementation("io.weaviate:client:4.0.1")
 
+    // OpenNLP
+    implementation("org.apache.opennlp:opennlp-tools:2.2.0")
+    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+
     testImplementation(kotlin("test"))
 }
 
