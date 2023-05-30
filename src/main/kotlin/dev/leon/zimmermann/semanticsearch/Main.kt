@@ -1,7 +1,9 @@
 package dev.leon.zimmermann.semanticsearch
 
 import dev.leon.zimmermann.semanticsearch.ConfluenceDataService.Companion.DOCUMENT_CLASS
+import dev.leon.zimmermann.semanticsearch.ConfluenceDataService.Companion.DOCUMENT_TITLE
 import dev.leon.zimmermann.semanticsearch.ConfluenceDataService.Companion.H1_TAG
+import dev.leon.zimmermann.semanticsearch.ConfluenceDataService.Companion.H2_TAG
 import dev.leon.zimmermann.semanticsearch.ConfluenceDataService.Companion.PARAGRAPH_TAG
 import io.weaviate.client.Config
 import io.weaviate.client.WeaviateClient
@@ -14,21 +16,19 @@ fun main(args: Array<String>) {
     checkClientStatus(client)
     initializeDatabaseScheme(client)
     initializeData(client)
+    makeQuery(client)
+}
+
+private fun makeQuery(client: WeaviateClient) {
     val result = client.graphQL().get()
         .withClassName(DOCUMENT_CLASS)
-        .withFields(*buildFields(PARAGRAPH_TAG, H1_TAG))
-        .withNearText(
-            NearTextArgument.builder()
-                .autocorrect(true)
-                .concepts(arrayOf(""))
-                .build()
-        )
+        .withFields(*buildFields(PARAGRAPH_TAG, H1_TAG, H2_TAG, DOCUMENT_TITLE))
         .withLimit(5)
         .run()
     if (result.error != null) {
         println(result.error)
     } else {
-        println(result.result.data)
+        println(result.result)
     }
 }
 
@@ -55,15 +55,19 @@ private fun initializeDatabaseScheme(client: WeaviateClient) {
 }
 
 private fun initializeData(client: WeaviateClient) {
-    client.batch()
+    val result = client.batch()
         .objectsBatcher()
         .withObjects(
             *ConfluenceDataService(
                 "C:\\Users\\lezimmermann\\Downloads\\SD",
-                "/stop_words_german.txt"
-            ).getData()
+                "/stop_words_german.txt").getData()
         )
         .run()
+    if (result.error != null) {
+        throw RuntimeException("Error ${result.error.statusCode}: ${result.error.messages.toString()}")
+    } else {
+        println(result.result.joinToString("\n"))
+    }
 }
 
 private fun buildFields(vararg names: String): Array<Field> {

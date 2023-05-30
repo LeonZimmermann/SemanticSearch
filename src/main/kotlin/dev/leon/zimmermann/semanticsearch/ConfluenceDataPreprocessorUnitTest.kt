@@ -13,7 +13,7 @@ internal class ConfluenceDataPreprocessorUnitTest {
     fun apply() {
         val confluenceDataPreprocessor = ConfluenceDataPreprocessor("/stop_words_german.txt")
         val input = javaClass.getResource("/test.html").readText(Charset.defaultCharset())
-        val result = confluenceDataPreprocessor.apply(listOf(input))
+        val result = confluenceDataPreprocessor.apply(input)
         // TODO Fix
         assertEquals(mapOf(
             H1_TAG to arrayOf("testtitel"),

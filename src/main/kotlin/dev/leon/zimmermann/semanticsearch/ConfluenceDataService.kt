@@ -1,12 +1,8 @@
 package dev.leon.zimmermann.semanticsearch
 
 import io.weaviate.client.v1.data.model.WeaviateObject
-import opennlp.tools.stemmer.PorterStemmer
-import opennlp.tools.tokenize.SimpleTokenizer
 import java.io.File
 import java.nio.charset.Charset
-import java.util.*
-import java.util.stream.Collectors
 
 
 class ConfluenceDataService(private val pathToFolder: String, stopwordsFile: String) : DataService {
@@ -14,6 +10,7 @@ class ConfluenceDataService(private val pathToFolder: String, stopwordsFile: Str
     companion object {
         const val DOCUMENT_CLASS = "Document"
 
+        const val DOCUMENT_TITLE = "documentTitle"
         const val PARAGRAPH_TAG = "p"
         const val H1_TAG = "h1"
         const val H2_TAG = "h2"
@@ -31,16 +28,23 @@ class ConfluenceDataService(private val pathToFolder: String, stopwordsFile: Str
         }
         return file.listFiles()
             ?.filter { it.isFile }
-            ?.map { it.readText(Charset.defaultCharset()) }
-            ?.let { confluenceDataPreprocessor.apply(it) }
+            ?.map { it.name to it.readText(Charset.defaultCharset()) }
+            ?.map { it.first to confluenceDataPreprocessor.apply(it.second) }
+            ?.map { addTitleToProperties(it) }
             ?.map { createWeaviateObject(it) }
             ?.toTypedArray()
             ?: throw RuntimeException("Could not get files from directory (\"$pathToFolder\")")
     }
 
-    private fun createWeaviateObject(it: Map<String, Array<Array<String>>>) =
+    private fun addTitleToProperties(pairOfTitleAndPropertyMap: Pair<String, Map<String, *>>): Map<String, Any?> {
+        val map = pairOfTitleAndPropertyMap.second.toMutableMap()
+        map[DOCUMENT_TITLE] = pairOfTitleAndPropertyMap.first
+        return map.toMap()
+    }
+
+    private fun createWeaviateObject(properties: Map<String, *>) =
         WeaviateObject.builder()
             .className(DOCUMENT_CLASS)
-            .properties(it)
+            .properties(properties)
             .build()
 }

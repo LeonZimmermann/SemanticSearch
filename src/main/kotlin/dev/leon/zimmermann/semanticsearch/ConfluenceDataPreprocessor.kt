@@ -24,12 +24,11 @@ class ConfluenceDataPreprocessor(stopwordsFile: String) {
             ?: throw RuntimeException("Could not find stopwords file (\"$stopwordsFile\")")
     private val porterStemmer = PorterStemmer()
 
-    fun apply(list: List<String>): List<Map<String, Array<Array<String>>>> {
-        return list
-            .map { it.replace("[\\n\\r]".toRegex(), "") }
-            .map { it.lowercase(Locale.getDefault()) }
-            .map { extractDataFromHtml(it) }
-            .map { it.mapValues { entry -> preprocess(entry.value) } }
+    fun apply(data: String): Map<String, *> {
+        return data.replace("[\\n\\r]".toRegex(), "")
+            .lowercase(Locale.getDefault())
+            .let { extractDataFromHtml(it) }
+            .mapValues { preprocess(it.value) }
     }
 
     private fun extractDataFromHtml(html: String): Map<String, Array<String>> {
@@ -44,16 +43,19 @@ class ConfluenceDataPreprocessor(stopwordsFile: String) {
         return pattern.toRegex()
             .findAll(html)
             .map { it.groupValues[1] }
+            .map { it.replace("<.*?>".toRegex(), "") }
+            .filter { it.isNotEmpty() }
             .toList()
             .toTypedArray()
     }
 
-    private fun preprocess(texts: Array<String>): Array<Array<String>> {
+    private fun preprocess(texts: Array<String>): String {
         return texts
             .map { removePunctuation(it) }
             .map { removeStopwords(it) }
             .map { text -> tokenize(text) }
-            .toTypedArray()
+            .map { it.joinToString(" ") }
+            .joinToString(" ")
     }
 
     private fun removePunctuation(text: String): String {
