@@ -1,11 +1,14 @@
-package dev.leon.zimmermann.semanticsearch
+package dev.leon.zimmermann.semanticsearch.data.confluence
 
+import dev.leon.zimmermann.semanticsearch.data.tutorial.DataService
+import dev.leon.zimmermann.semanticsearch.preprocessing.TextPreprocessor
 import io.weaviate.client.v1.data.model.WeaviateObject
 import java.io.File
 import java.nio.charset.Charset
 
 
-class ConfluenceDataService(private val pathToFolder: String, stopwordsFile: String) : DataService {
+class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: TextPreprocessor) :
+    DataService {
 
     companion object {
         const val DOCUMENT_CLASS = "Document"
@@ -16,7 +19,7 @@ class ConfluenceDataService(private val pathToFolder: String, stopwordsFile: Str
         const val H2_TAG = "h2"
     }
 
-    private val confluenceDataPreprocessor = ConfluenceDataPreprocessor(stopwordsFile)
+    private val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
 
     override fun getData(): Array<WeaviateObject> {
         val file = File(pathToFolder)

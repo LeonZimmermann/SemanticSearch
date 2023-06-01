@@ -1,4 +1,4 @@
-package dev.leon.zimmermann.semanticsearch
+package dev.leon.zimmermann.semanticsearch.data.tutorial
 
 import io.weaviate.client.v1.data.model.WeaviateObject
 

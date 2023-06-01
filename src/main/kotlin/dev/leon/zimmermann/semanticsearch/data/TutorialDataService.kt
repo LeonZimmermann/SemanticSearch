@@ -1,8 +1,9 @@
-package dev.leon.zimmermann.semanticsearch
+package dev.leon.zimmermann.semanticsearch.data
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import dev.leon.zimmermann.semanticsearch.data.tutorial.DataService
 import io.weaviate.client.v1.data.model.WeaviateObject
 import java.net.URL
 
