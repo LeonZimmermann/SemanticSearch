@@ -1,21 +1,24 @@
 package dev.leon.zimmermann.semanticsearch
 
+import dev.leon.zimmermann.semanticsearch.data.DataService
 import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService
-import dev.leon.zimmermann.semanticsearch.data.tutorial.DataService
 import io.weaviate.client.Config
 import io.weaviate.client.WeaviateClient
+import io.weaviate.client.v1.schema.model.Property
 import io.weaviate.client.v1.schema.model.WeaviateClass
 
 class ClientManager(private val dataService: DataService) {
 
     companion object {
         private const val VECTORIZER = "text2vec-transformers"
+        private const val WEAVIATE_BLOB_DATATYPE = "blob"
     }
 
     val client = WeaviateClient(Config("http", "localhost:8080"))
 
     init {
         checkClientStatus()
+        clearDatabase()
         initializeDatabaseScheme()
         initializeData()
     }
@@ -31,18 +34,44 @@ class ClientManager(private val dataService: DataService) {
         }
     }
 
+    private fun clearDatabase() {
+        client.schema().classDeleter()
+            .withClassName(ConfluenceDataService.DOCUMENT_CLASS)
+            .run()
+    }
+
     private fun initializeDatabaseScheme() {
         client.schema().classCreator()
             .withClass(
                 WeaviateClass.builder()
                     .className(ConfluenceDataService.DOCUMENT_CLASS)
+                    .properties(
+                        buildProperties(
+                            mapOf(
+                                ConfluenceDataService.DOCUMENT_URL to WEAVIATE_BLOB_DATATYPE,
+                                ConfluenceDataService.H1_TAG to WEAVIATE_BLOB_DATATYPE,
+                                ConfluenceDataService.H2_TAG to WEAVIATE_BLOB_DATATYPE,
+                                ConfluenceDataService.PARAGRAPH_TAG to WEAVIATE_BLOB_DATATYPE
+                            )
+                        )
+                    )
                     .vectorizer(VECTORIZER)
                     .build()
             )
             .run()
     }
 
+    private fun buildProperties(namesAndDataTypes: Map<String, String>): List<Property> {
+        return namesAndDataTypes.map { entry ->
+            Property.builder()
+                .name(entry.key)
+                .dataType(listOf(entry.value))
+                .build()
+        }.toList()
+    }
+
     private fun initializeData() {
+        println("initializing data...")
         val result = client.batch()
             .objectsBatcher()
             .withObjects(*dataService.getData())

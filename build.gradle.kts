@@ -19,6 +19,8 @@ dependencies {
     // Weaviate Client
     implementation("io.weaviate:client:4.0.1")
 
+    implementation("com.graphql-java:graphql-java:230521-nf-execution")
+
     // OpenNLP
     implementation("org.apache.opennlp:opennlp-tools:2.2.0")
     implementation("org.junit.jupiter:junit-jupiter:5.8.1")

@@ -35,6 +35,7 @@ class ConfluenceDataPreprocessor(private val textPreprocessor: TextPreprocessor)
             .map { it.groupValues[1] }
             .map { it.replace("<.*?>".toRegex(), "") }
             .filter { it.isNotEmpty() }
+            .map { it.trim() }
             .toList()
             .toTypedArray()
     }

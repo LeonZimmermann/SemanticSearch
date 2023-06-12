@@ -19,7 +19,7 @@ class DefaultTextPreprocessor(stopwordsFile: String): TextPreprocessor {
         return texts
             .map { removePunctuation(it) }
             .map { removeStopwords(it) }
-            .flatMap { tokenize(it) }
+            .flatMap { tokenizeAndStem(it) }
             .toTypedArray()
     }
 
@@ -34,8 +34,9 @@ class DefaultTextPreprocessor(stopwordsFile: String): TextPreprocessor {
         return text.replace(stopwordsRegex, "")
     }
 
-    private fun tokenize(text: String) =
-        SimpleTokenizer.INSTANCE.tokenize(text).map { porterStemmer.stem(it) }
+    private fun tokenizeAndStem(text: String) =
+        SimpleTokenizer.INSTANCE.tokenize(text)
+            .map { porterStemmer.stem(it) }
             .distinct()
             .toList()
 }

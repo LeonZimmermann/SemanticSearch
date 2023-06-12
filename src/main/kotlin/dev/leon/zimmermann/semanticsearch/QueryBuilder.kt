@@ -1,5 +1,6 @@
 package dev.leon.zimmermann.semanticsearch
 
+import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService
 import io.weaviate.client.WeaviateClient
 
 class QueryBuilder(private val client: WeaviateClient) {
@@ -13,7 +14,7 @@ class QueryBuilder(private val client: WeaviateClient) {
                             concepts: [${input.split(" ").joinToString(", ") { "\"${it}\""}}]
                           }
                     ) {
-                      documentTitle
+                      ${ConfluenceDataService.DOCUMENT_URL}
                       _additional {
                         distance
                       }
