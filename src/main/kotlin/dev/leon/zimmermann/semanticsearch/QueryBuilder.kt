@@ -1,9 +1,10 @@
 package dev.leon.zimmermann.semanticsearch
 
 import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService
+import dev.leon.zimmermann.semanticsearch.preprocessing.TextPreprocessor
 import io.weaviate.client.WeaviateClient
 
-class QueryBuilder(private val client: WeaviateClient) {
+class QueryBuilder(private val client: WeaviateClient, private val textPreprocessor: TextPreprocessor) {
     fun makeQuery(numberOfResults: Int, input: String): Any {
         val result = client.graphQL().raw().withQuery("""
             {
@@ -11,7 +12,7 @@ class QueryBuilder(private val client: WeaviateClient) {
                     Document(
                           limit: $numberOfResults
                           nearText: {
-                            concepts: [${input.split(" ").joinToString(", ") { "\"${it}\""}}]
+                            concepts: [${textPreprocessor.preprocess(input.split(" ").toTypedArray()).joinToString(", ") { "\"${it}\""}}]
                           }
                     ) {
                       ${ConfluenceDataService.DOCUMENT_URL}

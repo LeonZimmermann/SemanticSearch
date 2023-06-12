@@ -6,12 +6,12 @@ import dev.leon.zimmermann.semanticsearch.preprocessing.impl.IdentityTextPreproc
 import java.util.*
 import kotlin.system.exitProcess
 
-fun main(args: Array<String>) {
+fun main() {
     val dataPath = "C:\\Users\\lezimmermann\\Downloads\\mdk-architektur"
     val textPreprocessor = DefaultTextPreprocessor("/stop_words_german.txt")
     val dataService = ConfluenceDataService(dataPath, textPreprocessor)
     val clientManager = ClientManager(dataService)
-    val queryBuilder = QueryBuilder(clientManager.client)
+    val queryBuilder = QueryBuilder(clientManager.client, textPreprocessor)
     val scanner = Scanner(System.`in`)
     while (scanner.hasNext()) {
         val input = scanner.next()

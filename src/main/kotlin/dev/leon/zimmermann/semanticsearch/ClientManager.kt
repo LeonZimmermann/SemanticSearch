@@ -11,7 +11,7 @@ class ClientManager(private val dataService: DataService) {
 
     companion object {
         private const val VECTORIZER = "text2vec-transformers"
-        private const val WEAVIATE_BLOB_DATATYPE = "blob"
+        private const val WEAVIATE_TEXT_DATATYPE = "text"
     }
 
     val client = WeaviateClient(Config("http", "localhost:8080"))
@@ -48,10 +48,10 @@ class ClientManager(private val dataService: DataService) {
                     .properties(
                         buildProperties(
                             mapOf(
-                                ConfluenceDataService.DOCUMENT_URL to WEAVIATE_BLOB_DATATYPE,
-                                ConfluenceDataService.H1_TAG to WEAVIATE_BLOB_DATATYPE,
-                                ConfluenceDataService.H2_TAG to WEAVIATE_BLOB_DATATYPE,
-                                ConfluenceDataService.PARAGRAPH_TAG to WEAVIATE_BLOB_DATATYPE
+                                ConfluenceDataService.DOCUMENT_URL to WEAVIATE_TEXT_DATATYPE,
+                                ConfluenceDataService.H1_TAG to WEAVIATE_TEXT_DATATYPE,
+                                ConfluenceDataService.H2_TAG to WEAVIATE_TEXT_DATATYPE,
+                                ConfluenceDataService.PARAGRAPH_TAG to WEAVIATE_TEXT_DATATYPE
                             )
                         )
                     )
