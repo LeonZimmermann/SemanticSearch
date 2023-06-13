@@ -5,10 +5,11 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import dev.leon.zimmermann.semanticsearch.data.DataService
 import io.weaviate.client.v1.data.model.WeaviateObject
+import io.weaviate.client.v1.schema.model.WeaviateClass
 import java.net.URL
 
 
-class TutorialDataService: DataService {
+class TutorialDataService : DataService {
 
     override fun getData(): Array<WeaviateObject> {
         val connection =
@@ -30,6 +31,20 @@ class TutorialDataService: DataService {
                         )
                     ).build()
             }.toTypedArray()
+    }
+
+    override fun getDatabaseScheme(): WeaviateClass {
+        return WeaviateClass.builder()
+            .className("Question")
+            .properties(
+                buildProperties(
+                    mapOf(
+                        "category" to "text",
+                        "question" to "text",
+                        "answer" to "text"
+                    )
+                )
+            ).build()
     }
 
     inline fun <reified T> Gson.fromJson(json: String) =

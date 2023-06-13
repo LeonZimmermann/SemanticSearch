@@ -15,6 +15,7 @@ class QueryBuilder(private val client: WeaviateClient, private val textPreproces
                             concepts: [${textPreprocessor.preprocess(input.split(" ").toTypedArray()).joinToString(", ") { "\"${it}\""}}]
                           }
                     ) {
+                      ${ConfluenceDataService.TITLE_TAG}
                       ${ConfluenceDataService.DOCUMENT_URL}
                       _additional {
                         distance
