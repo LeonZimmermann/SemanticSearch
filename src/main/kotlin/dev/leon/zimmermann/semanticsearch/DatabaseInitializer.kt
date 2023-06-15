@@ -32,7 +32,7 @@ class DatabaseInitializer(
     }
 
     private fun initializeData() {
-        for (batch in arrayAsBatches(dataService.getData(), 50)) {
+        for (batch in arrayAsBatches(dataService.getData(), 5)) {
             val result = clientManager.client.batch()
                 .objectsBatcher()
                 .withObjects(*batch)

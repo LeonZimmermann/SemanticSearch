@@ -2,6 +2,7 @@ package dev.leon.zimmermann.semanticsearch
 
 import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService
 import dev.leon.zimmermann.semanticsearch.preprocessing.impl.DefaultTextPreprocessor
+import dev.leon.zimmermann.semanticsearch.preprocessing.impl.IdentityTextPreprocessor
 
 fun main() {
     val dataPath = "C:\\Users\\lezimmermann\\Downloads\\mdk"

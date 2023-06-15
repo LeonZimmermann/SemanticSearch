@@ -8,7 +8,7 @@ class ClientManager {
     companion object {
         private const val SCHEME = "http"
         private const val HOST = "localhost:8080"
-        private const val CONNECTION_TIMEOUT = 60
+        private const val CONNECTION_TIMEOUT = 60 * 5
         private const val CONNECTION_REQUEST_TIMEOUT = 60 * 5
         private const val CONNECTION_SOCKET_TIMEOUT = 60 * 5
     }

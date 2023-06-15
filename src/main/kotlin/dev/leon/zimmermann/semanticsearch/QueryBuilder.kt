@@ -6,20 +6,18 @@ import io.weaviate.client.WeaviateClient
 
 class QueryBuilder(private val client: WeaviateClient, private val textPreprocessor: TextPreprocessor) {
     fun makeQuery(numberOfResults: Int, input: String): Any {
+        val concepts = textPreprocessor.preprocess(input.split(" ").toTypedArray()).joinToString(", ") { "\"${it}\""}
+        println("makeQuery: $concepts")
         val result = client.graphQL().raw().withQuery("""
             {
                 Get {
                     Document(
                           limit: $numberOfResults
                           nearText: {
-                            concepts: [${textPreprocessor.preprocess(input.split(" ").toTypedArray()).joinToString(", ") { "\"${it}\""}}]
+                            concepts: [$concepts]
                           }
                     ) {
-                      ${ConfluenceDataService.TITLE_TAG}
                       ${ConfluenceDataService.DOCUMENT_URL}
-                      _additional {
-                        distance
-                      }
                     }
                 }
             }
