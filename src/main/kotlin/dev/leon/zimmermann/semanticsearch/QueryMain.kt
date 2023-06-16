@@ -14,7 +14,10 @@ fun main() {
         if (input == "exit") {
             exitProcess(0)
         } else {
-            println(queryBuilder.makeQuery(3, input))
+            queryBuilder.makeQuery(5, input)
+                .sortedBy { it.distance }
+                .joinToString("\n") { it.titleTags }
+                .let { println(it) }
         }
     }
 }

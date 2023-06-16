@@ -5,6 +5,7 @@ import dev.leon.zimmermann.semanticsearch.preprocessing.TextPreprocessor
 import io.weaviate.client.v1.data.model.WeaviateObject
 import io.weaviate.client.v1.schema.model.Property
 import io.weaviate.client.v1.schema.model.WeaviateClass
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.charset.Charset
 import kotlin.streams.asSequence
@@ -26,6 +27,8 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
         const val PARAGRAPH_TAG = "p"
     }
 
+    private val logger = LoggerFactory.getLogger(javaClass.toString())
+
     private val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
 
     override fun getData(): Array<WeaviateObject> {
@@ -39,11 +42,11 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
         return file.listFiles()
             ?.filter { it.isFile }
             ?.parallelStream()
-            ?.peek { println("reading file ${it.name}") }
+            ?.peek { logger.debug("reading file ${it.name}") }
             ?.map { it.toURI().path to it.readText(Charset.defaultCharset()) }
             ?.map { it.first to confluenceDataPreprocessor.apply(it.second) }
             ?.map { addUrlToProperties(it) }
-            ?.peek { println("read data: $it") }
+            ?.peek { logger.debug("data: $it") }
             ?.map { createWeaviateObject(it) }
             ?.asSequence()
             ?.toList()

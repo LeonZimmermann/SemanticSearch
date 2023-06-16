@@ -1,9 +1,8 @@
 package dev.leon.zimmermann.semanticsearch.data.tutorial
 
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import dev.leon.zimmermann.semanticsearch.data.DataService
+import dev.leon.zimmermann.semanticsearch.fromJson
 import io.weaviate.client.v1.data.model.WeaviateObject
 import io.weaviate.client.v1.schema.model.WeaviateClass
 import java.net.URL
@@ -46,8 +45,4 @@ class TutorialDataService : DataService {
                 )
             ).build()
     }
-
-    inline fun <reified T> Gson.fromJson(json: String) =
-        fromJson<T>(json, object : TypeToken<T>() {}.type)
-
 }

@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.7.20"
+    kotlin("kapt") version "1.8.22"
 }
 
 group = "dev.leon.zimmermann.semanticsearch"
@@ -13,6 +14,9 @@ repositories {
 
 dependencies {
 
+    implementation("org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:1.8.22")
+
+
     // Gson
     implementation("com.google.code.gson:gson:2.10.1")
 
@@ -23,6 +27,10 @@ dependencies {
     implementation("org.apache.opennlp:opennlp-tools:2.2.0")
     implementation("org.junit.jupiter:junit-jupiter:5.8.1")
     implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+
+    // Logback
+    implementation("org.slf4j:slf4j-api:2.0.7")
+    implementation("ch.qos.logback:logback-classic:1.4.8")
 
     testImplementation(kotlin("test"))
 }
