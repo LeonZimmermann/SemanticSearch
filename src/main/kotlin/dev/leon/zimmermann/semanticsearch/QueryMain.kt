@@ -10,7 +10,7 @@ fun main() {
     val queryBuilder = QueryBuilder(clientManager.client, textPreprocessor)
     val scanner = Scanner(System.`in`)
     while (scanner.hasNext()) {
-        val input = scanner.next()
+        val input = scanner.nextLine()
         if (input == "exit") {
             exitProcess(0)
         } else {
