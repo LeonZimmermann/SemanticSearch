@@ -6,10 +6,44 @@ import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService
 import dev.leon.zimmermann.semanticsearch.preprocessing.TextPreprocessor
 import io.weaviate.client.WeaviateClient
 import org.slf4j.LoggerFactory
+import java.io.IOException
 
 class QueryBuilder(private val client: WeaviateClient, private val textPreprocessor: TextPreprocessor) {
 
     private val logger = LoggerFactory.getLogger(javaClass.toString())
+
+    fun askQuestion(question: String): String {
+        val result = client.graphQL().raw().withQuery("""
+            {
+              Get {
+                Document(
+                  ask: {
+                    question: "${question}",
+                    properties: ["${ConfluenceDataService.PARAGRAPH_TAG}"],
+                  },
+                  limit: 1
+                ) {
+                  ${ConfluenceDataService.DOCUMENT_URL}
+                  _additional {
+                    answer {
+                      hasAnswer
+                      certainty
+                      property
+                      result
+                      startPosition
+                      endPosition
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()).run()
+        if (result.error != null) {
+            throw IOException(result.error.toString())
+        } else {
+            return result.toString()
+        }
+    }
 
     fun makeQuery(numberOfResults: Int, input: String): Array<Document> {
         val concepts = textPreprocessor.preprocess(input.split(" ").toTypedArray()).joinToString(", ") { "\"${it}\""}
@@ -37,7 +71,7 @@ class QueryBuilder(private val client: WeaviateClient, private val textPreproces
             }
         """.trimIndent()).run()
         if (result.error != null) {
-            throw RuntimeException(result.error.toString())
+            throw IOException(result.error.toString())
         } else {
             return parseResult(result.result.data)
         }

@@ -14,10 +14,17 @@ fun main() {
         if (input == "exit") {
             exitProcess(0)
         } else {
-            queryBuilder.makeQuery(5, input)
-                .sortedBy { it.distance }
-                .joinToString("\n") { it.titleTags }
-                .let { println(it) }
+            if (input.startsWith("query:")) {
+                queryBuilder.makeQuery(5, input)
+                    .sortedBy { it.distance }
+                    .joinToString("\n") { it.titleTags }
+                    .let { println(it) }
+            } else if (input.startsWith("question:")) {
+                println(queryBuilder.askQuestion(input))
+            } else {
+                throw IllegalArgumentException("Input has to start either with query: or question:. Input was \"$input\"")
+            }
+
         }
     }
 }
