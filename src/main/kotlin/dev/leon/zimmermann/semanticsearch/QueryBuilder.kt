@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory
 class QueryBuilder(private val client: WeaviateClient, private val textPreprocessor: TextPreprocessor) {
 
     private val logger = LoggerFactory.getLogger(javaClass.toString())
-    private val gson = Gson()
 
     fun makeQuery(numberOfResults: Int, input: String): Array<Document> {
         val concepts = textPreprocessor.preprocess(input.split(" ").toTypedArray()).joinToString(", ") { "\"${it}\""}

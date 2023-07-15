@@ -3,7 +3,6 @@ package dev.leon.zimmermann.semanticsearch.preprocessing.impl
 import dev.leon.zimmermann.semanticsearch.preprocessing.TextPreprocessor
 import opennlp.tools.stemmer.PorterStemmer
 import opennlp.tools.tokenize.SimpleTokenizer
-import org.slf4j.LoggerFactory
 import java.nio.charset.Charset
 import java.util.stream.Collectors
 
