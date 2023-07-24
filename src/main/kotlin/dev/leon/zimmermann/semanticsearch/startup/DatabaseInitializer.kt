@@ -1,9 +1,10 @@
-package dev.leon.zimmermann.semanticsearch
+package dev.leon.zimmermann.semanticsearch.startup
 
-import dev.leon.zimmermann.semanticsearch.data.DataService
+import dev.leon.zimmermann.semanticsearch.DataService
+import dev.leon.zimmermann.semanticsearch.DatabaseClient
 
 class DatabaseInitializer(
-    private val clientManager: ClientManager,
+    private val databaseClient: DatabaseClient,
     private val dataService: DataService
 ) {
 
@@ -14,7 +15,7 @@ class DatabaseInitializer(
     }
 
     private fun clearDatabase() {
-        val response = clientManager.client.schema().classDeleter()
+        val response = databaseClient.client.schema().classDeleter()
             .withClassName(dataService.getDatabaseScheme().className)
             .run()
         if (response.error != null) {
@@ -23,7 +24,7 @@ class DatabaseInitializer(
     }
 
     private fun initializeDatabaseScheme() {
-        val response = clientManager.client.schema().classCreator()
+        val response = databaseClient.client.schema().classCreator()
             .withClass(dataService.getDatabaseScheme())
             .run()
         if (response.error != null) {
@@ -33,7 +34,7 @@ class DatabaseInitializer(
 
     private fun initializeData() {
         for (batch in arrayAsBatches(dataService.getData(), 5)) {
-            val result = clientManager.client.batch()
+            val result = databaseClient.client.batch()
                 .objectsBatcher()
                 .withObjects(*batch)
                 .run()

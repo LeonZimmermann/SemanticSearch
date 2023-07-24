@@ -1,6 +1,6 @@
-package dev.leon.zimmermann.semanticsearch.preprocessing.impl
+package dev.leon.zimmermann.semanticsearch.preprocessors.impl
 
-import dev.leon.zimmermann.semanticsearch.preprocessing.TextPreprocessor
+import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
 import opennlp.tools.stemmer.PorterStemmer
 import opennlp.tools.tokenize.SimpleTokenizer
 import java.nio.charset.Charset

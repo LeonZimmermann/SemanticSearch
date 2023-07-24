@@ -1,4 +1,4 @@
-package dev.leon.zimmermann.semanticsearch
+package dev.leon.zimmermann.semanticsearch.domain
 
 data class Document(
     val id: String,

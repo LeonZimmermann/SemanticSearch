@@ -1,19 +1,19 @@
-package dev.leon.zimmermann.semanticsearch
+package dev.leon.zimmermann.semanticsearch.integration.client
 
+import dev.leon.zimmermann.semanticsearch.DatabaseClient
 import io.weaviate.client.Config
 import io.weaviate.client.WeaviateClient
 
-class ClientManager {
-
+class ClientManager: DatabaseClient {
     companion object {
         private const val SCHEME = "http"
-        private const val HOST = "localhost:8080"
+        private const val HOST = "localhost:2000"
         private const val CONNECTION_TIMEOUT = 60 * 5
         private const val CONNECTION_REQUEST_TIMEOUT = 60 * 5
         private const val CONNECTION_SOCKET_TIMEOUT = 60 * 5
     }
 
-    val client = WeaviateClient(
+    override val client = WeaviateClient(
         Config(
             SCHEME,
             HOST,
