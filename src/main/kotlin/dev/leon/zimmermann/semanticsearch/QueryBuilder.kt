@@ -5,7 +5,9 @@ import dev.leon.zimmermann.semanticsearch.domain.Document
 import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService
 import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 
+@Service
 class QueryBuilder(
     private val databaseClient: DatabaseClient,
     private val textPreprocessor: TextPreprocessor

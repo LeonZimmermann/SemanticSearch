@@ -3,15 +3,18 @@ package dev.leon.zimmermann.semanticsearch.integration.client
 import dev.leon.zimmermann.semanticsearch.DatabaseClient
 import io.weaviate.client.Config
 import io.weaviate.client.WeaviateClient
+import org.slf4j.LoggerFactory
 
 class ClientManager: DatabaseClient {
     companion object {
         private const val SCHEME = "http"
-        private const val HOST = "localhost:2000"
+        private const val HOST = "localhost:8080"
         private const val CONNECTION_TIMEOUT = 60 * 5
         private const val CONNECTION_REQUEST_TIMEOUT = 60 * 5
         private const val CONNECTION_SOCKET_TIMEOUT = 60 * 5
     }
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     override val client = WeaviateClient(
         Config(
@@ -31,11 +34,11 @@ class ClientManager: DatabaseClient {
     private fun checkClientStatus() {
         val meta = client.misc().metaGetter().run()
         if (meta.error == null) {
-            println("meta.hostname: ${meta.result.hostname}")
-            println("meta.version: ${meta.result.version}")
-            println("meta.modules: ${meta.result.modules}")
+            logger.debug("meta.hostname: ${meta.result.hostname}")
+            logger.debug("meta.version: ${meta.result.version}")
+            logger.debug("meta.modules: ${meta.result.modules}")
         } else {
-            println("Error ${meta.error.statusCode}: ${meta.error.messages}")
+            logger.error("Error ${meta.error.statusCode}: ${meta.error.messages}")
         }
     }
 }

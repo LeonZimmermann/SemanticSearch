@@ -9,5 +9,5 @@ import org.springframework.boot.runApplication
 class SemanticSearchApplication
 
 fun main(args: Array<String>) {
-    runApplication<SemanticSearchApplication>(*args)
+    runApplication<SemanticSearchApplication>(*args).start()
 }

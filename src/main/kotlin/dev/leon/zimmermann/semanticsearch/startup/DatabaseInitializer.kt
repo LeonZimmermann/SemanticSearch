@@ -2,16 +2,21 @@ package dev.leon.zimmermann.semanticsearch.startup
 
 import dev.leon.zimmermann.semanticsearch.DataService
 import dev.leon.zimmermann.semanticsearch.DatabaseClient
+import org.slf4j.LoggerFactory
 
 class DatabaseInitializer(
     private val databaseClient: DatabaseClient,
     private val dataService: DataService
 ) {
 
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     fun initializeDatabase() {
+        logger.debug("initializing database")
         clearDatabase()
         initializeDatabaseScheme()
         initializeData()
+        logger.debug("database initialization finished")
     }
 
     private fun clearDatabase() {
@@ -19,7 +24,7 @@ class DatabaseInitializer(
             .withClassName(dataService.getDatabaseScheme().className)
             .run()
         if (response.error != null) {
-            println("Error ${response.error.statusCode}: ${response.error.messages}")
+            logger.error("Error ${response.error.statusCode}: ${response.error.messages}")
         }
     }
 
@@ -28,7 +33,7 @@ class DatabaseInitializer(
             .withClass(dataService.getDatabaseScheme())
             .run()
         if (response.error != null) {
-            throw RuntimeException("Error ${response.error.statusCode}: ${response.error.messages}")
+            throw RuntimeException("Error ${response.error.statusCode}: ${response.error.messages.}")
         }
     }
 
@@ -41,7 +46,7 @@ class DatabaseInitializer(
             if (result.error != null) {
                 throw RuntimeException("Error ${result.error.statusCode}: ${result.error.messages}")
             } else {
-                println(result.result.joinToString("\n"))
+                logger.debug(result.result.joinToString("\n"))
             }
         }
     }
