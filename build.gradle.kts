@@ -25,7 +25,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.50")
 
     // Spring Boot
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf:3.1.2")
     implementation("org.springframework.boot:spring-boot-starter-actuator:3.1.2")
     implementation("org.springframework.boot:spring-boot-starter-web:3.1.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

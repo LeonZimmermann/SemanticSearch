@@ -1,7 +1,7 @@
-package dev.leon.zimmermann.semanticsearch.startup
+package dev.leon.zimmermann.semanticsearch
 
-import dev.leon.zimmermann.semanticsearch.DataService
-import dev.leon.zimmermann.semanticsearch.DatabaseClient
+import io.weaviate.client.v1.schema.model.Property
+import io.weaviate.client.v1.schema.model.WeaviateClass
 import org.slf4j.LoggerFactory
 
 class DatabaseInitializer(
@@ -16,6 +16,7 @@ class DatabaseInitializer(
         clearDatabase()
         initializeDatabaseScheme()
         initializeData()
+        setReadyFlag()
         logger.debug("database initialization finished")
     }
 
@@ -29,12 +30,29 @@ class DatabaseInitializer(
     }
 
     private fun initializeDatabaseScheme() {
-        val response = databaseClient.client.schema().classCreator()
+        handleErrorsIfNecessary(databaseClient.client.schema().classCreator()
             .withClass(dataService.getDatabaseScheme())
-            .run()
-        if (response.error != null) {
-            throw RuntimeException("Error ${response.error.statusCode}: ${response.error.messages.}")
+            .run())
+    }
+
+    private fun handleErrorsIfNecessary(result: io.weaviate.client.base.Result<*>) {
+        if (result.error != null) {
+            throw RuntimeException("Error ${result.error.statusCode}: ${result.error.messages}")
         }
+    }
+
+    private fun readyClass(): WeaviateClass {
+        return WeaviateClass.builder()
+            .className("Ready")
+            .properties(
+                listOf(
+                    Property.builder()
+                        .name("ready-flag")
+                        .dataType(listOf("boolean"))
+                        .build()
+                )
+            )
+            .build()
     }
 
     private fun initializeData() {
@@ -48,6 +66,14 @@ class DatabaseInitializer(
             } else {
                 logger.debug(result.result.joinToString("\n"))
             }
+        }
+    }
+
+    private fun setReadyFlag() {
+        val result = databaseClient.client.data().creator().withClassName("Ready")
+            .withProperties(mapOf("ready" to true)).run()
+        if (result.error != null) {
+            throw RuntimeException("Error ${result.error.statusCode}: ${result.error.messages}")
         }
     }
 

@@ -1,2 +1,2 @@
-server.error.path: /error
 management.endpoints.web.exposure.include: '*'
+server.port: 80
