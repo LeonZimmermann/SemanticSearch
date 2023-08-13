@@ -24,10 +24,9 @@ class SearchController(
     }
 
     @PostMapping("/search")
-    fun search(@RequestBody query: String): ResponseEntity<List<DocumentView>> {
+    fun search(@RequestBody query: String): ResponseEntity<Array<Map<String, String>>> {
         // TODO Validate query?
-        return ResponseEntity.ok(queryBuilder.makeQuery(5, query)
-            .map { DocumentView(it.documentUrl, it.titleTags) })
+        return ResponseEntity.ok(queryBuilder.makeQuery(5, query))
     }
 
     @PostMapping("/document")

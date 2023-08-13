@@ -8,4 +8,5 @@ import io.weaviate.client.v1.schema.model.WeaviateClass
 interface DataService {
     fun getData(): Array<WeaviateObject>
     fun getDatabaseScheme(): WeaviateClass
+    fun parseResult(result: Any): Array<Map<String, String>>
 }
