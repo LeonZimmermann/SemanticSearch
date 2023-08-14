@@ -29,11 +29,7 @@ class QueryBuilder(
                             concepts: [$concepts]
                           }
                     ) {
-                      ${ConfluenceDataService.DOCUMENT_URL}
-                      ${ConfluenceDataService.TITLE_TAG}
-                      ${ConfluenceDataService.H1_TAG}
-                      ${ConfluenceDataService.H2_TAG}
-                      ${ConfluenceDataService.PARAGRAPH_TAG}
+                      ${dataService.getDatabaseScheme().properties.joinToString("\n") { it.name }}
                       _additional {
                         id
                         distance
