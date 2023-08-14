@@ -15,20 +15,20 @@ class QueryBuilder(
     private val logger = LoggerFactory.getLogger(javaClass.toString())
 
     fun makeQuery(numberOfResults: Int, input: String): Array<Map<String, String>> {
-        val concepts = "[\"${textPreprocessor.preprocess(input)}\"]"
+        val concepts = "\"${textPreprocessor.preprocess(input)}\""
         val query = """
             {
                 Get {
                     ${dataService.getDatabaseScheme().className}(
                           limit: $numberOfResults
-                          nearText: {
-                            concepts: $concepts
+                          hybrid: {
+                            query: $concepts
                           }
                     ) {
                       ${dataService.getDatabaseScheme().properties.joinToString("\n") { it.name }}
                       _additional {
-                        id
-                        distance
+                        score
+                        explainScore
                       }
                     }
                 }
@@ -42,11 +42,16 @@ class QueryBuilder(
         } else {
             if (result.result.data != null) {
                 println("Query result: ${result.result.data}")
-                return dataService.parseResult(result.result.data)
-                    .sortedBy { it["distance"]?.toFloat() }
+                return dataService.parseQueryResult(result.result.data) {
+                    mapOf(
+                        "score" to it["score"].toString(),
+                        "explainScore" to it["explainScore"].toString()
+                    )
+                }
+                    .sortedByDescending { it["score"]?.toFloat() }
                     .toTypedArray()
             } else {
-                throw IllegalArgumentException("Query result was null")
+                throw IllegalArgumentException("Query result was null. Concepts: $concepts")
             }
         }
     }

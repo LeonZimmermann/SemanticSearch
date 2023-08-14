@@ -7,6 +7,7 @@ class DataServiceHelper {
         return namesAndDataTypes.map { entry ->
             Property.builder()
                 .name(entry.key)
+                .indexInverted(true)
                 .dataType(listOf(entry.value))
                 .build()
         }.toList()

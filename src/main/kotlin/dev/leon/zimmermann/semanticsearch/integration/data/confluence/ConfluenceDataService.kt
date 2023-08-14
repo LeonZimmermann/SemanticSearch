@@ -74,23 +74,34 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
             .build()
     }
 
-    override fun parseResult(result: Any): Array<Map<String, String>> {
-        return ((result as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)[getDatabaseScheme().className]
+    override fun parseQueryResult(
+        queryResult: Any,
+        parseAdditionals: (LinkedTreeMap<String, Any>) -> Map<String, String>
+    ): Array<Map<String, String>> {
+        return ((queryResult as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)[getDatabaseScheme().className]
             .orEmpty()
             .map { it as LinkedTreeMap<String, String> }
             .map {
-                mapOf(
-                    "id" to (it["id"] ?: ""),
-                    "documentUrl" to (it["documentUrl"] ?: ""),
-                    "title" to (it["title"] ?: ""),
-                    "h1" to (it["h1"] ?: ""),
-                    "h2" to (it["h2"] ?: ""),
-                    "p" to (it["p"] ?: ""),
-                    "distance" to (it["distance"]?.toFloat().toString())
-                )
+                val result = getMapOfData(it)
+                val additionalMap =
+                    (it["_additional"] as? LinkedTreeMap<String, Any>)?.let(parseAdditionals)
+                if (additionalMap != null) {
+                    result.putAll(additionalMap)
+                }
+                result
             }
             .toTypedArray()
     }
+
+    private fun getMapOfData(sourceMap: LinkedTreeMap<String, String>) =
+        mutableMapOf(
+            "id" to (sourceMap["id"] ?: ""),
+            "documentUrl" to (sourceMap["documentUrl"] ?: ""),
+            "title" to (sourceMap["title"] ?: ""),
+            "h1" to (sourceMap["h1"] ?: ""),
+            "h2" to (sourceMap["h2"] ?: ""),
+            "p" to (sourceMap["p"] ?: ""),
+        )
 
     private fun addUrlToProperties(pairOfUrlAndPropertyMap: Pair<String, Map<String, *>>): Map<String, Any?> {
         val map = pairOfUrlAndPropertyMap.second.toMutableMap()

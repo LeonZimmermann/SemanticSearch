@@ -6,8 +6,9 @@ import dev.leon.zimmermann.semanticsearch.DataService
 import dev.leon.zimmermann.semanticsearch.fromJson
 import dev.leon.zimmermann.semanticsearch.integration.data.DataServiceHelper
 import io.weaviate.client.v1.data.model.WeaviateObject
+import io.weaviate.client.v1.misc.model.BM25Config
+import io.weaviate.client.v1.misc.model.InvertedIndexConfig
 import io.weaviate.client.v1.misc.model.VectorIndexConfig
-import io.weaviate.client.v1.misc.model.VectorIndexConfig.VectorIndexConfigBuilder
 import io.weaviate.client.v1.schema.model.WeaviateClass
 import java.net.URL
 
@@ -56,23 +57,38 @@ class TutorialDataService : DataService {
                     .efConstruction(128)
                     .build()
             )
+            .invertedIndexConfig(InvertedIndexConfig.builder()
+                .bm25(BM25Config.builder()
+                    .b(.5f)
+                    .k1(.5f)
+                    .build())
+                .build())
             .vectorizer("text2vec-transformers")
             .build()
     }
 
-    override fun parseResult(result: Any): Array<Map<String, String>> {
-        return ((result as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)[getDatabaseScheme().className]
+    override fun parseQueryResult(
+        queryResult: Any,
+        parseAdditionals: (LinkedTreeMap<String, Any>) -> Map<String, String>
+    ): Array<Map<String, String>> {
+        return ((queryResult as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)[getDatabaseScheme().className]
             .orEmpty()
             .map { it as LinkedTreeMap<String, String> }
             .map {
-                val additional = (it["_additional"] as? LinkedTreeMap<String, Any>)
-                mapOf(
-                    "category" to (it["category"] ?: ""),
-                    "question" to (it["question"] ?: ""),
-                    "answer" to (it["answer"] ?: ""),
-                    "distance" to (additional?.get("distance").toString())
-                )
+                val result = getMapOfData(it)
+                val additionalMap =
+                    (it["_additional"] as? LinkedTreeMap<String, Any>)?.let(parseAdditionals)
+                if (additionalMap != null) {
+                    result.putAll(additionalMap)
+                }
+                result
             }
             .toTypedArray()
     }
+
+    private fun getMapOfData(sourceMap: LinkedTreeMap<String, String>) = mutableMapOf(
+        "category" to (sourceMap["category"] ?: ""),
+        "question" to (sourceMap["question"] ?: ""),
+        "answer" to (sourceMap["answer"] ?: ""),
+    )
 }
