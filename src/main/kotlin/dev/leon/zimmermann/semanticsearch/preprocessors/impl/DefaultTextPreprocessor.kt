@@ -15,12 +15,13 @@ class DefaultTextPreprocessor(stopwordsFile: String): TextPreprocessor {
             ?: throw RuntimeException("Could not find stopwords file (\"$stopwordsFile\")")
     private val porterStemmer = PorterStemmer()
 
-    override fun preprocess(texts: Array<String>): Array<String> {
-        return texts
-            .map { removePunctuation(it) }
-            .map { removeStopwords(it) }
-            .flatMap { tokenizeAndStem(it) }
-            .toTypedArray()
+    override fun preprocess(input: String): String {
+        return input
+            .let { removePunctuation(it) }
+            .let { removeStopwords(it) }
+            .let { tokenizeAndStem(it) }
+            .joinToString(" ")
+            .lowercase()
     }
 
     private fun removePunctuation(text: String): String {

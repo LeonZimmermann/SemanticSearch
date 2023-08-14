@@ -28,7 +28,6 @@ class TutorialDataService : DataService {
             .map {
                 WeaviateObject.builder()
                     .className("Question")
-                    .vector((it["Vector"] as ArrayList<Double>).map { number -> number.toFloat() }.toTypedArray())
                     .properties(
                         mapOf(
                             "category" to it["Category"],
@@ -50,19 +49,28 @@ class TutorialDataService : DataService {
                         "answer" to "text"
                     )
                 )
+            ).vectorIndexConfig(
+                VectorIndexConfig.builder()
+                    .distance("l2-squared")
+                    .ef(100)
+                    .efConstruction(128)
+                    .build()
             )
             .vectorizer("text2vec-transformers")
             .build()
     }
 
     override fun parseResult(result: Any): Array<Map<String, String>> {
-        return ((result as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)["Document"]
+        return ((result as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)[getDatabaseScheme().className]
             .orEmpty()
             .map { it as LinkedTreeMap<String, String> }
             .map {
+                val additional = (it["_additional"] as? LinkedTreeMap<String, Any>)
                 mapOf(
+                    "category" to (it["category"] ?: ""),
                     "question" to (it["question"] ?: ""),
-                    "answer" to (it["answer"] ?: "")
+                    "answer" to (it["answer"] ?: ""),
+                    "distance" to (additional?.get("distance").toString())
                 )
             }
             .toTypedArray()

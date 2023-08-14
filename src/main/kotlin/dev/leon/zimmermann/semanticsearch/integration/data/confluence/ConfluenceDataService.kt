@@ -75,7 +75,7 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
     }
 
     override fun parseResult(result: Any): Array<Map<String, String>> {
-        return ((result as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)["Document"]
+        return ((result as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)[getDatabaseScheme().className]
             .orEmpty()
             .map { it as LinkedTreeMap<String, String> }
             .map {
