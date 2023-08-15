@@ -24,6 +24,7 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
 
         const val DOCUMENT_CLASS = "Document"
 
+        const val ID = "id"
         const val DOCUMENT_URL = "documentUrl"
         const val TITLE_TAG = "title"
         const val H1_TAG = "h1"
@@ -94,12 +95,12 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
     }
 
     override fun getMapOfData(sourceMap: LinkedTreeMap<String, String>): Map<String, String> = mapOf(
-        "id" to (sourceMap["id"] ?: "").toString(),
-        "documentUrl" to (sourceMap["documentUrl"] ?: "").toString(),
-        "title" to (sourceMap["title"] ?: "").toString(),
-        "h1" to (sourceMap["h1"] ?: "").toString(),
-        "h2" to (sourceMap["h2"] ?: "").toString(),
-        "p" to (sourceMap["p"] ?: "").toString(),
+        ID to (sourceMap[ID] ?: "").toString(),
+        DOCUMENT_URL to (sourceMap[DOCUMENT_URL] ?: "").toString(),
+        TITLE_TAG to (sourceMap[TITLE_TAG] ?: "").toString(),
+        H1_TAG to (sourceMap[H1_TAG] ?: "").toString(),
+        H2_TAG to (sourceMap[H2_TAG] ?: "").toString(),
+        PARAGRAPH_TAG to (sourceMap[PARAGRAPH_TAG] ?: "").toString(),
     )
 
     private fun addUrlToProperties(pairOfUrlAndPropertyMap: Pair<String, Map<String, *>>): Map<String, Any?> {
