@@ -9,5 +9,5 @@ import io.weaviate.client.v1.schema.model.WeaviateClass
 interface DataService {
     fun getData(): Array<WeaviateObject>
     fun getDatabaseScheme(): WeaviateClass
-    fun parseQueryResult(queryResult: Any, parseAdditionals: (LinkedTreeMap<String, Any>) -> Map<String, String>): Array<Map<String, String>>
+    fun getMapOfData(sourceMap: LinkedTreeMap<String, String>): Map<String, String>
 }

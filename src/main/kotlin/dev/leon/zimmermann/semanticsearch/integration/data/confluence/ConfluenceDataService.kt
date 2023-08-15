@@ -5,6 +5,9 @@ import dev.leon.zimmermann.semanticsearch.DataService
 import dev.leon.zimmermann.semanticsearch.integration.data.DataServiceHelper
 import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
 import io.weaviate.client.v1.data.model.WeaviateObject
+import io.weaviate.client.v1.misc.model.BM25Config
+import io.weaviate.client.v1.misc.model.InvertedIndexConfig
+import io.weaviate.client.v1.misc.model.VectorIndexConfig
 import io.weaviate.client.v1.schema.model.WeaviateClass
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -74,34 +77,14 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
             .build()
     }
 
-    override fun parseQueryResult(
-        queryResult: Any,
-        parseAdditionals: (LinkedTreeMap<String, Any>) -> Map<String, String>
-    ): Array<Map<String, String>> {
-        return ((queryResult as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)[getDatabaseScheme().className]
-            .orEmpty()
-            .map { it as LinkedTreeMap<String, String> }
-            .map {
-                val result = getMapOfData(it)
-                val additionalMap =
-                    (it["_additional"] as? LinkedTreeMap<String, Any>)?.let(parseAdditionals)
-                if (additionalMap != null) {
-                    result.putAll(additionalMap)
-                }
-                result
-            }
-            .toTypedArray()
-    }
-
-    private fun getMapOfData(sourceMap: LinkedTreeMap<String, String>) =
-        mutableMapOf(
-            "id" to (sourceMap["id"] ?: ""),
-            "documentUrl" to (sourceMap["documentUrl"] ?: ""),
-            "title" to (sourceMap["title"] ?: ""),
-            "h1" to (sourceMap["h1"] ?: ""),
-            "h2" to (sourceMap["h2"] ?: ""),
-            "p" to (sourceMap["p"] ?: ""),
-        )
+    override fun getMapOfData(sourceMap: LinkedTreeMap<String, String>): Map<String, String> = mapOf(
+        "id" to (sourceMap["id"] ?: "").toString(),
+        "documentUrl" to (sourceMap["documentUrl"] ?: "").toString(),
+        "title" to (sourceMap["title"] ?: "").toString(),
+        "h1" to (sourceMap["h1"] ?: "").toString(),
+        "h2" to (sourceMap["h2"] ?: "").toString(),
+        "p" to (sourceMap["p"] ?: "").toString(),
+    )
 
     private fun addUrlToProperties(pairOfUrlAndPropertyMap: Pair<String, Map<String, *>>): Map<String, Any?> {
         val map = pairOfUrlAndPropertyMap.second.toMutableMap()

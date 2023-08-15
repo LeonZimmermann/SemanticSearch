@@ -1,5 +1,6 @@
 package dev.leon.zimmermann.semanticsearch
 
+import com.google.gson.internal.LinkedTreeMap
 import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
 import io.weaviate.client.v1.data.model.WeaviateObject
 import org.slf4j.LoggerFactory
@@ -16,24 +17,7 @@ class QueryBuilder(
 
     fun makeQuery(numberOfResults: Int, input: String): Array<Map<String, String>> {
         val concepts = "\"${textPreprocessor.preprocess(input)}\""
-        val query = """
-            {
-                Get {
-                    ${dataService.getDatabaseScheme().className}(
-                          limit: $numberOfResults
-                          hybrid: {
-                            query: $concepts
-                          }
-                    ) {
-                      ${dataService.getDatabaseScheme().properties.joinToString("\n") { it.name }}
-                      _additional {
-                        score
-                        explainScore
-                      }
-                    }
-                }
-            }
-        """.trimIndent()
+        val query = createQuery(numberOfResults, concepts)
         logger.debug("Concepts: $concepts")
         logger.debug("Query: $query")
         val result = databaseClient.client.graphQL().raw().withQuery(query).run()
@@ -42,18 +26,51 @@ class QueryBuilder(
         } else {
             if (result.result.data != null) {
                 println("Query result: ${result.result.data}")
-                return dataService.parseQueryResult(result.result.data) {
-                    mapOf(
-                        "score" to it["score"].toString(),
-                        "explainScore" to it["explainScore"].toString()
-                    )
-                }
+                return parseQueryResult(result.result.data)
                     .sortedByDescending { it["score"]?.toFloat() }
                     .toTypedArray()
             } else {
                 throw IllegalArgumentException("Query result was null. Concepts: $concepts")
             }
         }
+    }
+
+    private fun createQuery(numberOfResults: Int, concepts: String) = """
+        {
+            Get {
+                ${dataService.getDatabaseScheme().className}(
+                      limit: $numberOfResults
+                      hybrid: {
+                        query: $concepts
+                      }
+                ) {
+                  ${dataService.getDatabaseScheme().properties.joinToString("\n") { it.name }}
+                  _additional {
+                    score
+                    explainScore
+                  }
+                }
+            }
+        }
+    """.trimIndent()
+
+    private fun parseQueryResult(queryResult: Any): Array<Map<String, String>> {
+        return ((queryResult as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)[dataService.getDatabaseScheme().className]
+            .orEmpty()
+            .map { it as LinkedTreeMap<String, String> }
+            .map {
+                val result = dataService.getMapOfData(it).toMutableMap()
+                val additionalSourceMap = it["_additional"] as? LinkedTreeMap<String, Any>
+                if (additionalSourceMap != null) {
+                    val additionalMap = mapOf(
+                        "score" to additionalSourceMap["score"].toString(),
+                        "explainScore" to additionalSourceMap["explainScore"].toString()
+                    )
+                    result.putAll(additionalMap)
+                }
+                result
+            }
+            .toTypedArray()
     }
 
     fun getDataInClass(): List<WeaviateObject> {

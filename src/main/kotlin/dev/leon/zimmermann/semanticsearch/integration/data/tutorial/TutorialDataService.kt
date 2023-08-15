@@ -67,28 +67,9 @@ class TutorialDataService : DataService {
             .build()
     }
 
-    override fun parseQueryResult(
-        queryResult: Any,
-        parseAdditionals: (LinkedTreeMap<String, Any>) -> Map<String, String>
-    ): Array<Map<String, String>> {
-        return ((queryResult as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)[getDatabaseScheme().className]
-            .orEmpty()
-            .map { it as LinkedTreeMap<String, String> }
-            .map {
-                val result = getMapOfData(it)
-                val additionalMap =
-                    (it["_additional"] as? LinkedTreeMap<String, Any>)?.let(parseAdditionals)
-                if (additionalMap != null) {
-                    result.putAll(additionalMap)
-                }
-                result
-            }
-            .toTypedArray()
-    }
-
-    private fun getMapOfData(sourceMap: LinkedTreeMap<String, String>) = mutableMapOf(
-        "category" to (sourceMap["category"] ?: ""),
-        "question" to (sourceMap["question"] ?: ""),
-        "answer" to (sourceMap["answer"] ?: ""),
+    override fun getMapOfData(sourceMap: LinkedTreeMap<String, String>) = mapOf(
+        "category" to (sourceMap["category"] ?: "").toString(),
+        "question" to (sourceMap["question"] ?: "").toString(),
+        "answer" to (sourceMap["answer"] ?: "").toString(),
     )
 }
