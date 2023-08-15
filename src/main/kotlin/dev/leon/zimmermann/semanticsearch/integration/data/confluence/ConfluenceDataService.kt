@@ -72,6 +72,22 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
                         PARAGRAPH_TAG to WEAVIATE_TEXT_DATATYPE
                     )
                 )
+            ).vectorIndexConfig(
+                VectorIndexConfig.builder()
+                    .distance("l2-squared")
+                    .ef(100)
+                    .efConstruction(128)
+                    .build()
+            )
+            .invertedIndexConfig(
+                InvertedIndexConfig.builder()
+                    .bm25(
+                        BM25Config.builder()
+                            .b(.5f)
+                            .k1(.5f)
+                            .build()
+                    )
+                    .build()
             )
             .vectorizer(VECTORIZER)
             .build()
