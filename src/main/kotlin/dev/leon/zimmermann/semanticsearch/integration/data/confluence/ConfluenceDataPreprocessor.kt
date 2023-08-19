@@ -5,57 +5,38 @@ import dev.leon.zimmermann.semanticsearch.integration.data.confluence.Confluence
 import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService.Companion.PARAGRAPH_TAG
 import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService.Companion.TITLE_TAG
 import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 
 class ConfluenceDataPreprocessor(private val textPreprocessor: TextPreprocessor) {
 
     companion object {
-        private const val TITLE_PATTERN = "<title.*?>(.*?)</title>"
-        private const val H1_PATTERN = "<h1.*?>(.*?)</h1>"
-        private const val H2_PATTERN = "<h2.*?>(.*?)</h2>"
-        private const val PARAGRAPH_PATTERN = "<p.*?>(.*?)</p>"
-
         private val IGNORE_PREPROCESS = arrayOf(TITLE_TAG)
     }
 
     fun apply(data: String): Map<String, *> {
-        return data.replace("[\\n\\r]".toRegex(), " ")
-            .lowercase()
+        return Jsoup.parse(data)
             .let { extractDataFromHtml(it) }
+            .mapValues { it.value.joinToString(" ").replace("\\s+".toRegex(), " ") }
             .mapValues {
-                if (!IGNORE_PREPROCESS.contains(it.key)) {
-                    it.value.joinToString(" ") { value -> textPreprocessor.preprocess(value) }
-                        .replace("\\s+".toRegex(), " ")
-                } else {
-                    it.value.joinToString(" ")
-                        .replace("\\s+".toRegex(), " ")
-                }
+                if (!IGNORE_PREPROCESS.contains(it.key)) textPreprocessor.preprocess(it.value) else it.value
             }
     }
 
-    private fun extractDataFromHtml(html: String): Map<String, Array<String>> {
+    private fun extractDataFromHtml(document: Document): Map<String, Array<String>> {
         return mapOf(
-            TITLE_TAG to extractTitle(html),
-            H1_TAG to extract(H1_PATTERN, html),
-            H2_TAG to extract(H2_PATTERN, html),
-            PARAGRAPH_TAG to extract(PARAGRAPH_PATTERN, html),
+            TITLE_TAG to extract(document, "title"),
+            H1_TAG to extract(document, "h1"),
+            H2_TAG to extract(document, "h2"),
+            PARAGRAPH_TAG to extract(document, "p"),
         )
     }
 
-    private fun extractTitle(html: String): Array<String> {
-        return extract(TITLE_PATTERN, html)
-            .map { it.split(":").last() }
-            .map { it.trim() }
-            .toTypedArray()
-    }
-
-    private fun extract(pattern: String, html: String): Array<String> {
-        return pattern.toRegex()
-            .findAll(html)
-            .map { it.groupValues[1] }
-            .map { it.replace("<.*?>".toRegex(), "") }
-            .filter { it.isNotEmpty() }
-            .map { it.trim() }
-            .toList()
-            .toTypedArray()
+    private fun extract(document: Document, tagName: String): Array<String> {
+        return document.getElementsByTag(tagName).map {
+            it.html()
+                .lowercase()
+                .replace("\\s+".toRegex(), " ")
+        }.toTypedArray()
     }
 }

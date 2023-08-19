@@ -33,7 +33,7 @@ class SemanticSearchConfiguration : WebMvcConfigurer {
 
     @Bean
     fun dataService(): DataService {
-        //return TutorialDataService()
-        return ConfluenceDataService("data/sites", textPreprocessor())
+        return TutorialDataService()
+        //return ConfluenceDataService("data/sites", textPreprocessor())
     }
 }

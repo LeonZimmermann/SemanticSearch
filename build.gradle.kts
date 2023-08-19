@@ -36,6 +36,9 @@ dependencies {
     // Weaviate Client
     implementation("io.weaviate:client:4.0.1")
 
+    // JSoup
+    implementation("org.jsoup:jsoup:1.11.3")
+
     // OpenNLP
     implementation("org.apache.opennlp:opennlp-tools:2.2.0")
 
