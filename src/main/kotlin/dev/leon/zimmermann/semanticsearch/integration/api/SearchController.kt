@@ -4,7 +4,6 @@ import dev.leon.zimmermann.semanticsearch.DataService
 import dev.leon.zimmermann.semanticsearch.DatabaseClient
 import dev.leon.zimmermann.semanticsearch.DatabaseInitializer
 import dev.leon.zimmermann.semanticsearch.QueryBuilder
-import dev.leon.zimmermann.semanticsearch.integration.api.dto.DocumentView
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -27,6 +26,12 @@ class SearchController(
     fun search(@RequestBody query: String): ResponseEntity<Array<Map<String, String>>> {
         // TODO Validate query?
         return ResponseEntity.ok(queryBuilder.makeQuery(5, query))
+    }
+
+    @PostMapping("/ask")
+    fun ask(@RequestBody question: String): ResponseEntity<String> {
+        // TODO Validate question?
+        return ResponseEntity.ok(queryBuilder.askQuestion(question))
     }
 
     @PostMapping("/document")
