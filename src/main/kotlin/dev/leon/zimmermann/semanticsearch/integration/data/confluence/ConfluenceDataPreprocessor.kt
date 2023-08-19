@@ -6,37 +6,37 @@ import dev.leon.zimmermann.semanticsearch.integration.data.confluence.Confluence
 import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService.Companion.TITLE_TAG
 import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 
 class ConfluenceDataPreprocessor(private val textPreprocessor: TextPreprocessor) {
 
     companion object {
         private val IGNORE_PREPROCESS = arrayOf(TITLE_TAG)
+        private val MAIN_CONTENT_ID = "main-content"
     }
 
     fun apply(data: String): Map<String, *> {
         return Jsoup.parse(data)
             .let { extractDataFromHtml(it) }
             .mapValues { it.value.joinToString(" ").replace("\\s+".toRegex(), " ") }
-            .mapValues {
-                if (!IGNORE_PREPROCESS.contains(it.key)) textPreprocessor.preprocess(it.value) else it.value
-            }
+            .mapValues { applyPreprocessing(it.key, it.value) }
     }
 
-    private fun extractDataFromHtml(document: Document): Map<String, Array<String>> {
+    private fun applyPreprocessing(tag: String, string: String) =
+        if (!IGNORE_PREPROCESS.contains(tag)) textPreprocessor.preprocess(string) else string
+
+    private fun extractDataFromHtml(element: Element): Map<String, Array<String>> {
         return mapOf(
-            TITLE_TAG to extract(document, "title"),
-            H1_TAG to extract(document, "h1"),
-            H2_TAG to extract(document, "h2"),
-            PARAGRAPH_TAG to extract(document, "p"),
+            TITLE_TAG to extract(element, TITLE_TAG),
+            H1_TAG to extract(element.getElementById(MAIN_CONTENT_ID), H1_TAG),
+            H2_TAG to extract(element.getElementById(MAIN_CONTENT_ID), H2_TAG),
+            PARAGRAPH_TAG to extract(element.getElementById(MAIN_CONTENT_ID), PARAGRAPH_TAG),
         )
     }
 
-    private fun extract(document: Document, tagName: String): Array<String> {
-        return document.getElementsByTag(tagName).map {
-            it.html()
-                .lowercase()
-                .replace("\\s+".toRegex(), " ")
+    private fun extract(element: Element, tagName: String): Array<String> {
+        return element.getElementsByTag(tagName).map {
+            it.text().lowercase().replace("\\s+".toRegex(), " ")
         }.toTypedArray()
     }
 }
