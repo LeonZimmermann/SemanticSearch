@@ -27,13 +27,13 @@ class SemanticSearchConfiguration : WebMvcConfigurer {
 
     @Bean
     fun textPreprocessor(): TextPreprocessor {
-        return IdentityTextPreprocessor()
-        //return DefaultTextPreprocessor("/stop_words_german.txt")
+        //return IdentityTextPreprocessor()
+        return DefaultTextPreprocessor("/stop_words_german.txt")
     }
 
     @Bean
     fun dataService(): DataService {
-        return TutorialDataService()
-        //return ConfluenceDataService("data/sites", textPreprocessor())
+        //return TutorialDataService()
+        return ConfluenceDataService("data/sites", textPreprocessor())
     }
 }

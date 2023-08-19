@@ -53,6 +53,8 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
             ?.peek { logger.debug("reading file ${it.name} on Thread ${Thread.currentThread().name}") }
             ?.map { it.toURI().path to it.readText(Charset.defaultCharset()) }
             ?.map { it.first to confluenceDataPreprocessor.apply(it.second) }
+            ?.filter { it.second != null }
+            ?.map { it.first to it.second!! }
             ?.map { addUrlToProperties(it) }
             ?.map { createWeaviateObject(it) }
             ?.asSequence()

@@ -15,8 +15,12 @@ class ConfluenceDataPreprocessor(private val textPreprocessor: TextPreprocessor)
         private val MAIN_CONTENT_ID = "main-content"
     }
 
-    fun apply(data: String): Map<String, *> {
-        return Jsoup.parse(data)
+    fun apply(data: String): Map<String, *>? {
+        val document = Jsoup.parse(data)
+        if (document.getElementById(MAIN_CONTENT_ID) == null) {
+            return null
+        }
+        return document
             .let { extractDataFromHtml(it) }
             .mapValues { it.value.joinToString(" ").replace("\\s+".toRegex(), " ") }
             .mapValues { applyPreprocessing(it.key, it.value) }

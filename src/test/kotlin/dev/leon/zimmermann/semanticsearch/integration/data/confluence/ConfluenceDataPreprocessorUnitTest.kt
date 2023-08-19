@@ -6,6 +6,7 @@ import dev.leon.zimmermann.semanticsearch.integration.data.confluence.Confluence
 import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService.Companion.TITLE_TAG
 import dev.leon.zimmermann.semanticsearch.preprocessors.impl.IdentityTextPreprocessor
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import java.nio.charset.Charset
 
@@ -16,7 +17,7 @@ internal class ConfluenceDataPreprocessorUnitTest {
         val textPreprocessor = IdentityTextPreprocessor()
         val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
         val input = javaClass.getResource("/test.html").readText(Charset.defaultCharset())
-        val result = confluenceDataPreprocessor.apply(input)
+        val result = confluenceDataPreprocessor.apply(input)!!
         assertEquals("test", result[TITLE_TAG])
         assertEquals("test-titel", result[H1_TAG])
         assertEquals("noch ein weiterer test-titel, aber als h2", result[H2_TAG])
@@ -24,11 +25,19 @@ internal class ConfluenceDataPreprocessorUnitTest {
     }
 
     @Test
+    fun testNoContent() {
+        val textPreprocessor = IdentityTextPreprocessor()
+        val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
+        val input = javaClass.getResource("/test-no-content.html").readText(Charset.defaultCharset())
+        assertNull(confluenceDataPreprocessor.apply(input))
+    }
+
+    @Test
     fun testApplyRealistic() {
         val textPreprocessor = IdentityTextPreprocessor()
         val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
         val input = javaClass.getResource("/Auftragsliste_exportieren.html").readText(Charset.defaultCharset())
-        val result = confluenceDataPreprocessor.apply(input)
+        val result = confluenceDataPreprocessor.apply(input)!!
         assertEquals("auftragsliste exportieren - dokumentation", result[TITLE_TAG])
         assertEquals("auftragsliste erzeugen benutzeroberfläche des unterbereichs auftragsliste exportieren", result[H1_TAG])
         assertEquals("exportdaten festlegen menüs und buttons der kopf-navigationsleiste linker teil des inhaltsbereichs rechter teil des inhaltsbereichs", result[H2_TAG])
