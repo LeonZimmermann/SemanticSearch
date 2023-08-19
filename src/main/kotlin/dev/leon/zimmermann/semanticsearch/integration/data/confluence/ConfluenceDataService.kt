@@ -1,13 +1,19 @@
-package dev.leon.zimmermann.semanticsearch.data.confluence
+package dev.leon.zimmermann.semanticsearch.integration.data.confluence
 
-import dev.leon.zimmermann.semanticsearch.data.DataService
-import dev.leon.zimmermann.semanticsearch.preprocessing.TextPreprocessor
+import com.google.gson.internal.LinkedTreeMap
+import dev.leon.zimmermann.semanticsearch.DataService
+import dev.leon.zimmermann.semanticsearch.integration.data.DataServiceHelper
+import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
 import io.weaviate.client.v1.data.model.WeaviateObject
-import io.weaviate.client.v1.schema.model.Property
+import io.weaviate.client.v1.misc.model.BM25Config
+import io.weaviate.client.v1.misc.model.InvertedIndexConfig
+import io.weaviate.client.v1.misc.model.VectorIndexConfig
 import io.weaviate.client.v1.schema.model.WeaviateClass
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.io.IOException
 import java.nio.charset.Charset
+import java.util.stream.Collectors
 import kotlin.streams.asSequence
 
 
@@ -20,6 +26,7 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
 
         const val DOCUMENT_CLASS = "Document"
 
+        const val ID = "id"
         const val DOCUMENT_URL = "documentUrl"
         const val TITLE_TAG = "title"
         const val H1_TAG = "h1"
@@ -29,6 +36,7 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
 
     private val logger = LoggerFactory.getLogger(javaClass.toString())
 
+    private val dataServiceHelper = DataServiceHelper()
     private val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
 
     override fun getData(): Array<WeaviateObject> {
@@ -42,23 +50,22 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
         return file.listFiles()
             ?.filter { it.isFile }
             ?.parallelStream()
-            ?.peek { logger.debug("reading file ${it.name}") }
+            ?.peek { logger.debug("reading file ${it.name} on Thread ${Thread.currentThread().name}") }
             ?.map { it.toURI().path to it.readText(Charset.defaultCharset()) }
             ?.map { it.first to confluenceDataPreprocessor.apply(it.second) }
             ?.map { addUrlToProperties(it) }
-            ?.peek { logger.debug("data: $it") }
             ?.map { createWeaviateObject(it) }
             ?.asSequence()
             ?.toList()
             ?.toTypedArray()
-            ?: throw RuntimeException("Could not get files from directory (\"$pathToFolder\")")
+            ?: throw IOException("Could not get files from directory (\"$pathToFolder\")")
     }
 
     override fun getDatabaseScheme(): WeaviateClass {
         return WeaviateClass.builder()
             .className(DOCUMENT_CLASS)
             .properties(
-                buildProperties(
+                dataServiceHelper.buildProperties(
                     mapOf(
                         DOCUMENT_URL to WEAVIATE_TEXT_DATATYPE,
                         TITLE_TAG to WEAVIATE_TEXT_DATATYPE,
@@ -67,10 +74,35 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
                         PARAGRAPH_TAG to WEAVIATE_TEXT_DATATYPE
                     )
                 )
+            ).vectorIndexConfig(
+                VectorIndexConfig.builder()
+                    .distance("l2-squared")
+                    .ef(100)
+                    .efConstruction(128)
+                    .build()
+            )
+            .invertedIndexConfig(
+                InvertedIndexConfig.builder()
+                    .bm25(
+                        BM25Config.builder()
+                            .b(.5f)
+                            .k1(.5f)
+                            .build()
+                    )
+                    .build()
             )
             .vectorizer(VECTORIZER)
             .build()
     }
+
+    override fun getMapOfData(sourceMap: LinkedTreeMap<String, String>): Map<String, String> = mapOf(
+        ID to (sourceMap[ID] ?: "").toString(),
+        DOCUMENT_URL to (sourceMap[DOCUMENT_URL] ?: "").toString(),
+        TITLE_TAG to (sourceMap[TITLE_TAG] ?: "").toString(),
+        H1_TAG to (sourceMap[H1_TAG] ?: "").toString(),
+        H2_TAG to (sourceMap[H2_TAG] ?: "").toString(),
+        PARAGRAPH_TAG to (sourceMap[PARAGRAPH_TAG] ?: "").toString(),
+    )
 
     private fun addUrlToProperties(pairOfUrlAndPropertyMap: Pair<String, Map<String, *>>): Map<String, Any?> {
         val map = pairOfUrlAndPropertyMap.second.toMutableMap()

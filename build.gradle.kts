@@ -1,12 +1,19 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    id("org.springframework.boot") version "3.1.2"
+    id("io.spring.dependency-management") version "1.1.2"
     kotlin("jvm") version "1.7.20"
     kotlin("kapt") version "1.8.22"
+    kotlin("plugin.spring") version "1.9.0"
 }
 
 group = "dev.leon.zimmermann.semanticsearch"
 version = "1.0-SNAPSHOT"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
 
 repositories {
     mavenCentral()
@@ -15,6 +22,13 @@ repositories {
 dependencies {
 
     implementation("org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:1.8.22")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.50")
+
+    // Spring Boot
+    implementation("org.springframework.boot:spring-boot-starter-actuator:3.1.2")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.1.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.2")
 
     // Gson
     implementation("com.google.code.gson:gson:2.10.1")
@@ -25,11 +39,7 @@ dependencies {
     // OpenNLP
     implementation("org.apache.opennlp:opennlp-tools:2.2.0")
 
-    // Logback
-    implementation("org.slf4j:slf4j-api:2.0.7")
-    implementation("ch.qos.logback:logback-classic:1.4.8")
-
-    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:1.9.0")
     testImplementation(kotlin("test"))
 }
 
@@ -38,5 +48,9 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
+}
+
+tasks.getByName<Jar>("jar") {
+    enabled = false
 }

@@ -1,9 +1,9 @@
-package dev.leon.zimmermann.semanticsearch.data.confluence
+package dev.leon.zimmermann.semanticsearch.integration.data.confluence
 
-import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService.Companion.H1_TAG
-import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService.Companion.H2_TAG
-import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService.Companion.PARAGRAPH_TAG
-import dev.leon.zimmermann.semanticsearch.preprocessing.impl.DefaultTextPreprocessor
+import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService.Companion.H1_TAG
+import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService.Companion.H2_TAG
+import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService.Companion.PARAGRAPH_TAG
+import dev.leon.zimmermann.semanticsearch.preprocessors.impl.DefaultTextPreprocessor
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.nio.charset.Charset

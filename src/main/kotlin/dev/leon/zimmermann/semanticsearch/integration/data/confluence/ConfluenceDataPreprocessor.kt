@@ -1,11 +1,10 @@
-package dev.leon.zimmermann.semanticsearch.data.confluence
+package dev.leon.zimmermann.semanticsearch.integration.data.confluence
 
-import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService.Companion.H1_TAG
-import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService.Companion.H2_TAG
-import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService.Companion.PARAGRAPH_TAG
-import dev.leon.zimmermann.semanticsearch.data.confluence.ConfluenceDataService.Companion.TITLE_TAG
-import dev.leon.zimmermann.semanticsearch.preprocessing.TextPreprocessor
-import java.util.*
+import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService.Companion.H1_TAG
+import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService.Companion.H2_TAG
+import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService.Companion.PARAGRAPH_TAG
+import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService.Companion.TITLE_TAG
+import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
 
 class ConfluenceDataPreprocessor(private val textPreprocessor: TextPreprocessor) {
 
@@ -24,7 +23,7 @@ class ConfluenceDataPreprocessor(private val textPreprocessor: TextPreprocessor)
             .let { extractDataFromHtml(it) }
             .mapValues {
                 if (!IGNORE_PREPROCESS.contains(it.key)) {
-                    textPreprocessor.preprocess(it.value).joinToString(" ")
+                    it.value.joinToString { value -> textPreprocessor.preprocess(value) }
                 } else {
                     it.value.joinToString(" ")
                 }

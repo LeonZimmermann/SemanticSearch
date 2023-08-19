@@ -1,64 +1,89 @@
 package dev.leon.zimmermann.semanticsearch
 
-import dev.leon.zimmermann.semanticsearch.data.DataService
+import io.weaviate.client.v1.schema.model.Property
+import io.weaviate.client.v1.schema.model.WeaviateClass
+import org.slf4j.LoggerFactory
+import java.io.IOException
 
 class DatabaseInitializer(
-    private val clientManager: ClientManager,
+    private val databaseClient: DatabaseClient,
     private val dataService: DataService
 ) {
 
+    companion object {
+        private const val BATCH_SIZE = 5
+    }
+
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     fun initializeDatabase() {
+        logger.debug("initializing database")
         clearDatabase()
         initializeDatabaseScheme()
         initializeData()
+        setReadyFlag()
+        logger.debug("database initialization finished")
     }
 
     private fun clearDatabase() {
-        val response = clientManager.client.schema().classDeleter()
+        val response = databaseClient.client.schema().classDeleter()
             .withClassName(dataService.getDatabaseScheme().className)
             .run()
         if (response.error != null) {
-            println("Error ${response.error.statusCode}: ${response.error.messages}")
+            logger.error("Error ${response.error.statusCode}: ${response.error.messages}")
+        } else {
+            logger.debug("Successfully cleared database")
         }
     }
 
     private fun initializeDatabaseScheme() {
-        val response = clientManager.client.schema().classCreator()
+        handleErrorsIfNecessary(databaseClient.client.schema().classCreator()
             .withClass(dataService.getDatabaseScheme())
-            .run()
-        if (response.error != null) {
-            throw RuntimeException("Error ${response.error.statusCode}: ${response.error.messages}")
+            .run(), "Successfully initialized database scheme")
+    }
+
+    private fun handleErrorsIfNecessary(result: io.weaviate.client.base.Result<*>, successMessage: String) {
+        if (result.error != null) {
+            throw IOException("Error ${result.error.statusCode}: ${result.error.messages}")
+        } else {
+            logger.debug(successMessage)
         }
     }
 
+    private fun readyClass(): WeaviateClass {
+        return WeaviateClass.builder()
+            .className("Ready")
+            .properties(
+                listOf(
+                    Property.builder()
+                        .name("ready-flag")
+                        .dataType(listOf("boolean"))
+                        .build()
+                )
+            )
+            .build()
+    }
+
     private fun initializeData() {
-        for (batch in arrayAsBatches(dataService.getData(), 5)) {
-            val result = clientManager.client.batch()
+        val arrayOfBatches = arrayAsBatches(dataService.getData(), BATCH_SIZE)
+        for ((index, batch) in arrayOfBatches.withIndex()) {
+            val result = databaseClient.client.batch()
                 .objectsBatcher()
                 .withObjects(*batch)
                 .run()
             if (result.error != null) {
-                throw RuntimeException("Error ${result.error.statusCode}: ${result.error.messages}")
+                throw IOException("Error ${result.error.statusCode}: ${result.error.messages}")
             } else {
-                println(result.result.joinToString("\n"))
+                logger.debug("Successfully added batch $index of ${arrayOfBatches.size}")
             }
         }
     }
 
-    private inline fun <reified T> arrayAsBatches(array: Array<T>, batchSize: Int): Array<Array<T>> {
-        return if (array.size < batchSize) {
-            arrayOf(array)
-        } else {
-            val list = mutableListOf<Array<T>>()
-            for (i in 0 until (array.size / batchSize)) {
-                val currentStart = i * batchSize
-                val currentEnd = (i + 1) * batchSize - 1
-                list.add(array.sliceArray(IntRange(currentStart, currentEnd)))
-            }
-            val lastStart = array.size - array.size % batchSize - 1
-            val lastEnd = array.size - 1
-            list.add(array.sliceArray(IntRange(lastStart, lastEnd)))
-            list.toTypedArray()
+    private fun setReadyFlag() {
+        val result = databaseClient.client.data().creator().withClassName("Ready")
+            .withProperties(mapOf("ready" to true)).run()
+        if (result.error != null) {
+            throw IOException("Error ${result.error.statusCode}: ${result.error.messages}")
         }
     }
 

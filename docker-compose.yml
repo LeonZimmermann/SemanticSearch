@@ -1,16 +1,25 @@
 version: '3.4'
 services:
+  api:
+    build:
+      context: .
+    container_name: 'api'
+    ports:
+      - '80:80'
+      - '5005:5005'
+    depends_on:
+      - weaviate
   weaviate:
     image: semitechnologies/weaviate:1.18.3
     command:
       - --host
       - 0.0.0.0
       - --port
-      - '8080'
+      - '2000'
       - --scheme
       - http
     ports:
-      - "8080:8080"
+      - "2000:2000"
     restart: on-failure:0
     environment:
       PROMETHEUS_MONITORING_ENABLED: 'true'
