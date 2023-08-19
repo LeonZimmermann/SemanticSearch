@@ -18,14 +18,16 @@ class ConfluenceDataPreprocessor(private val textPreprocessor: TextPreprocessor)
     }
 
     fun apply(data: String): Map<String, *> {
-        return data.replace("[\\n\\r]".toRegex(), "")
+        return data.replace("[\\n\\r]".toRegex(), " ")
             .lowercase()
             .let { extractDataFromHtml(it) }
             .mapValues {
                 if (!IGNORE_PREPROCESS.contains(it.key)) {
-                    it.value.joinToString { value -> textPreprocessor.preprocess(value) }
+                    it.value.joinToString(" ") { value -> textPreprocessor.preprocess(value) }
+                        .replace("\\s+".toRegex(), " ")
                 } else {
                     it.value.joinToString(" ")
+                        .replace("\\s+".toRegex(), " ")
                 }
             }
     }

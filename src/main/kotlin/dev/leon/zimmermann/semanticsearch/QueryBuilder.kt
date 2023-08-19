@@ -92,7 +92,7 @@ class QueryBuilder(
         val result = databaseClient.client.graphQL().raw().withQuery("""
             {
               Get {
-                ${dataService.getDatabaseScheme().className}((
+                ${dataService.getDatabaseScheme().className}(
                   ask: {
                     question: "$question",
                   },
