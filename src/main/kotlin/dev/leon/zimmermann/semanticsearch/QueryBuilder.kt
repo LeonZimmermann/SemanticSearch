@@ -16,7 +16,7 @@ class QueryBuilder(
     private val logger = LoggerFactory.getLogger(javaClass.toString())
 
     fun makeQuery(numberOfResults: Int, input: String): Array<Map<String, String>> {
-        val concepts = "\"${textPreprocessor.preprocess(input)}\""
+        val concepts = "\"$input\""
         val query = createQuery(numberOfResults, concepts)
         logger.debug("Concepts: $concepts")
         logger.debug("Query: $query")
@@ -42,6 +42,7 @@ class QueryBuilder(
                       limit: $numberOfResults
                       hybrid: {
                         query: $concepts
+                        alpha: 0.25
                       }
                 ) {
                   ${dataService.getDatabaseScheme().properties.joinToString("\n") { it.name }}

@@ -3,11 +3,16 @@ package dev.leon.zimmermann.semanticsearch
 import io.weaviate.client.v1.schema.model.Property
 import io.weaviate.client.v1.schema.model.WeaviateClass
 import org.slf4j.LoggerFactory
+import java.io.IOException
 
 class DatabaseInitializer(
     private val databaseClient: DatabaseClient,
     private val dataService: DataService
 ) {
+
+    companion object {
+        private const val BATCH_SIZE = 5
+    }
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -26,18 +31,22 @@ class DatabaseInitializer(
             .run()
         if (response.error != null) {
             logger.error("Error ${response.error.statusCode}: ${response.error.messages}")
+        } else {
+            logger.debug("Successfully cleared database")
         }
     }
 
     private fun initializeDatabaseScheme() {
         handleErrorsIfNecessary(databaseClient.client.schema().classCreator()
             .withClass(dataService.getDatabaseScheme())
-            .run())
+            .run(), "Successfully initialized database scheme")
     }
 
-    private fun handleErrorsIfNecessary(result: io.weaviate.client.base.Result<*>) {
+    private fun handleErrorsIfNecessary(result: io.weaviate.client.base.Result<*>, successMessage: String) {
         if (result.error != null) {
-            throw RuntimeException("Error ${result.error.statusCode}: ${result.error.messages}")
+            throw IOException("Error ${result.error.statusCode}: ${result.error.messages}")
+        } else {
+            logger.debug(successMessage)
         }
     }
 
@@ -56,15 +65,16 @@ class DatabaseInitializer(
     }
 
     private fun initializeData() {
-        for (batch in arrayAsBatches(dataService.getData(), 5)) {
+        val arrayOfBatches = arrayAsBatches(dataService.getData(), BATCH_SIZE)
+        for ((index, batch) in arrayOfBatches.withIndex()) {
             val result = databaseClient.client.batch()
                 .objectsBatcher()
                 .withObjects(*batch)
                 .run()
             if (result.error != null) {
-                throw RuntimeException("Error ${result.error.statusCode}: ${result.error.messages}")
+                throw IOException("Error ${result.error.statusCode}: ${result.error.messages}")
             } else {
-                logger.debug(result.result.joinToString("\n"))
+                logger.debug("Successfully added batch $index of ${arrayOfBatches.size}")
             }
         }
     }
@@ -73,7 +83,7 @@ class DatabaseInitializer(
         val result = databaseClient.client.data().creator().withClassName("Ready")
             .withProperties(mapOf("ready" to true)).run()
         if (result.error != null) {
-            throw RuntimeException("Error ${result.error.statusCode}: ${result.error.messages}")
+            throw IOException("Error ${result.error.statusCode}: ${result.error.messages}")
         }
     }
 

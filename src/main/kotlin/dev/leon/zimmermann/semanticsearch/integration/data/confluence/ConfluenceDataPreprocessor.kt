@@ -23,7 +23,7 @@ class ConfluenceDataPreprocessor(private val textPreprocessor: TextPreprocessor)
             .let { extractDataFromHtml(it) }
             .mapValues {
                 if (!IGNORE_PREPROCESS.contains(it.key)) {
-                    it.value.map { value -> textPreprocessor.preprocess(value) }
+                    it.value.joinToString { value -> textPreprocessor.preprocess(value) }
                 } else {
                     it.value.joinToString(" ")
                 }

@@ -11,7 +11,9 @@ import io.weaviate.client.v1.misc.model.VectorIndexConfig
 import io.weaviate.client.v1.schema.model.WeaviateClass
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.io.IOException
 import java.nio.charset.Charset
+import java.util.stream.Collectors
 import kotlin.streams.asSequence
 
 
@@ -48,16 +50,15 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
         return file.listFiles()
             ?.filter { it.isFile }
             ?.parallelStream()
-            ?.peek { logger.debug("reading file ${it.name}") }
+            ?.peek { logger.debug("reading file ${it.name} on Thread ${Thread.currentThread().name}") }
             ?.map { it.toURI().path to it.readText(Charset.defaultCharset()) }
             ?.map { it.first to confluenceDataPreprocessor.apply(it.second) }
             ?.map { addUrlToProperties(it) }
-            ?.peek { logger.debug("data: $it") }
             ?.map { createWeaviateObject(it) }
             ?.asSequence()
             ?.toList()
             ?.toTypedArray()
-            ?: throw RuntimeException("Could not get files from directory (\"$pathToFolder\")")
+            ?: throw IOException("Could not get files from directory (\"$pathToFolder\")")
     }
 
     override fun getDatabaseScheme(): WeaviateClass {
