@@ -65,16 +65,15 @@ class DatabaseInitializer(
     }
 
     private fun initializeData() {
-        val arrayOfBatches = arrayAsBatches(dataService.getData(), BATCH_SIZE)
-        for ((index, batch) in arrayOfBatches.withIndex()) {
+        dataService.getData().forEach {
             val result = databaseClient.client.batch()
                 .objectsBatcher()
-                .withObjects(*batch)
+                .withObject(it)
                 .run()
             if (result.error != null) {
                 throw IOException("Error ${result.error.statusCode}: ${result.error.messages}")
             } else {
-                logger.debug("Successfully added batch $index of ${arrayOfBatches.size}")
+                logger.debug("Successfully added ${it.id} to ${it.className}")
             }
         }
     }

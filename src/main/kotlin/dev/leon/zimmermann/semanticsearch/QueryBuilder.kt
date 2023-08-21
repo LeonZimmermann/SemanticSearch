@@ -95,6 +95,7 @@ class QueryBuilder(
                 ${dataService.getDatabaseScheme().className}(
                   ask: {
                     question: "$question",
+                    rerank: true
                   },
                   limit: 1
                 ) {

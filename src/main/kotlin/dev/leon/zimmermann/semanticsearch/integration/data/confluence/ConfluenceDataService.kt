@@ -14,6 +14,7 @@ import java.io.File
 import java.io.IOException
 import java.nio.charset.Charset
 import java.util.stream.Collectors
+import java.util.stream.Stream
 import kotlin.streams.asSequence
 
 
@@ -39,7 +40,7 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
     private val dataServiceHelper = DataServiceHelper()
     private val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
 
-    override fun getData(): Array<WeaviateObject> {
+    override fun getData(): Stream<WeaviateObject> {
         val file = File(pathToFolder)
         if (!file.exists()) {
             throw IllegalArgumentException("File does not exist (\"$pathToFolder\")")
@@ -57,9 +58,6 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
             ?.map { it.first to it.second!! }
             ?.map { addUrlToProperties(it) }
             ?.map { createWeaviateObject(it) }
-            ?.asSequence()
-            ?.toList()
-            ?.toTypedArray()
             ?: throw IOException("Could not get files from directory (\"$pathToFolder\")")
     }
 

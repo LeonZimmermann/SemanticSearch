@@ -11,13 +11,14 @@ import io.weaviate.client.v1.misc.model.InvertedIndexConfig
 import io.weaviate.client.v1.misc.model.VectorIndexConfig
 import io.weaviate.client.v1.schema.model.WeaviateClass
 import java.net.URL
+import java.util.stream.Stream
 
 
 class TutorialDataService : DataService {
 
     private val dataServiceHelper = DataServiceHelper()
 
-    override fun getData(): Array<WeaviateObject> {
+    override fun getData(): Stream<WeaviateObject> {
         val connection =
             URL("https://raw.githubusercontent.com/weaviate-tutorials/quickstart/main/data/jeopardy_tiny+vectors.json").openConnection()
         val input = connection.getInputStream()
@@ -36,7 +37,7 @@ class TutorialDataService : DataService {
                             "answer" to it["Answer"]
                         )
                     ).build()
-            }.toTypedArray()
+            }.parallelStream()
     }
 
     override fun getDatabaseScheme(): WeaviateClass {
