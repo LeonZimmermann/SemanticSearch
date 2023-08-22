@@ -3,7 +3,7 @@ package dev.leon.zimmermann.semanticsearch
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-internal class AlgorithmsKtTest {
+internal class AlgorithmsUnitTest {
 
     @Test
     fun testArrayAsBatches() {

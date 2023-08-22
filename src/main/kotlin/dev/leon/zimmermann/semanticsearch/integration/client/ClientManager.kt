@@ -4,11 +4,11 @@ import dev.leon.zimmermann.semanticsearch.DatabaseClient
 import io.weaviate.client.Config
 import io.weaviate.client.WeaviateClient
 import org.slf4j.LoggerFactory
+import java.io.IOException
 
-class ClientManager: DatabaseClient {
+class ClientManager(hostName: String, port: String, ) : DatabaseClient {
     companion object {
         private const val SCHEME = "http"
-        private const val HOST = "weaviate:2000"
         private const val CONNECTION_TIMEOUT = 60 * 5
         private const val CONNECTION_REQUEST_TIMEOUT = 60 * 5
         private const val CONNECTION_SOCKET_TIMEOUT = 60 * 5
@@ -19,7 +19,7 @@ class ClientManager: DatabaseClient {
     override val client = WeaviateClient(
         Config(
             SCHEME,
-            HOST,
+            "$hostName:$port",
             null,
             CONNECTION_TIMEOUT,
             CONNECTION_REQUEST_TIMEOUT,
@@ -38,7 +38,7 @@ class ClientManager: DatabaseClient {
             logger.debug("meta.version: ${meta.result.version}")
             logger.debug("meta.modules: ${meta.result.modules}")
         } else {
-            logger.error("Error ${meta.error.statusCode}: ${meta.error.messages}")
+            throw IOException("Error ${meta.error.statusCode}: ${meta.error.messages}")
         }
     }
 }

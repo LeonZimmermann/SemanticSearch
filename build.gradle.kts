@@ -1,8 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.util.capitalizeDecapitalize.toLowerCaseAsciiOnly
 
 plugins {
     id("org.springframework.boot") version "3.1.2"
     id("io.spring.dependency-management") version "1.1.2"
+    id("com.avast.gradle.docker-compose") version "0.14.0"
     kotlin("jvm") version "1.7.20"
     kotlin("kapt") version "1.8.22"
     kotlin("plugin.spring") version "1.9.0"
@@ -29,6 +31,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web:3.1.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.2")
+    kapt("org.springframework.boot:spring-boot-configuration-processor")
 
     // Gson
     implementation("com.google.code.gson:gson:2.10.1")
@@ -48,6 +51,20 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    include("**/*UnitTest.class")
+}
+
+tasks.register<Test>("integrationTest") {
+    useJUnitPlatform()
+    include("**/*IntegrationTest.class")
+    group = "verification"
+}
+
+dockerCompose {
+    useComposeFiles.add("docker-compose.test.yml")
+    projectName = "${project.name.toLowerCaseAsciiOnly()}_integrationtest"
+    buildBeforeUp = true
+    isRequiredBy(tasks.getByName("integrationTest"))
 }
 
 tasks.withType<KotlinCompile> {

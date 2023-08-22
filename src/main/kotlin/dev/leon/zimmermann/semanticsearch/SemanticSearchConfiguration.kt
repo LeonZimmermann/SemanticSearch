@@ -2,9 +2,7 @@ package dev.leon.zimmermann.semanticsearch
 
 import dev.leon.zimmermann.semanticsearch.integration.client.ClientManager
 import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService
-import dev.leon.zimmermann.semanticsearch.integration.data.tutorial.TutorialDataService
 import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
-import dev.leon.zimmermann.semanticsearch.preprocessors.impl.DefaultTextPreprocessor
 import dev.leon.zimmermann.semanticsearch.preprocessors.impl.IdentityTextPreprocessor
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,8 +19,8 @@ class SemanticSearchConfiguration : WebMvcConfigurer {
     }
 
     @Bean
-    fun databaseClient(): DatabaseClient {
-        return ClientManager()
+    fun databaseClient(weaviateConfiguration: WeaviateConfiguration): DatabaseClient {
+        return ClientManager(weaviateConfiguration.hostname, weaviateConfiguration.port)
     }
 
     @Bean
@@ -32,8 +30,8 @@ class SemanticSearchConfiguration : WebMvcConfigurer {
     }
 
     @Bean
-    fun dataService(): DataService {
+    fun dataService(dataConfiguration: DataConfiguration): DataService {
         //return TutorialDataService()
-        return ConfluenceDataService("data/sites", textPreprocessor())
+        return ConfluenceDataService(dataConfiguration.path, textPreprocessor())
     }
 }

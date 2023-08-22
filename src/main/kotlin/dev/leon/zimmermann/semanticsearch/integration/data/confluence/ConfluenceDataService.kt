@@ -41,6 +41,7 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
     private val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
 
     override fun getData(): Stream<WeaviateObject> {
+        logger.debug(File(".").listFiles().map { it.name }.joinToString("\n"))
         val file = File(pathToFolder)
         if (!file.exists()) {
             throw IllegalArgumentException("File does not exist (\"$pathToFolder\")")

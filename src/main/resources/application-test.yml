@@ -1,7 +1,7 @@
 spring:
   config:
     activate:
-      on-profile: default
+      on-profile: test
 management:
   endpoints:
     web:
@@ -10,6 +10,6 @@ management:
 server:
   port: 80
 weaviate:
-  hostname: 'weaviate'
+  hostname: 'localhost'
   port: '2000'
-data.path: 'data/sites'
+data.path: 'testdata'
