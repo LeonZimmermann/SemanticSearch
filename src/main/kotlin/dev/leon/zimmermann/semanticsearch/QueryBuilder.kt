@@ -4,8 +4,8 @@ import com.google.gson.internal.LinkedTreeMap
 import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
 import io.weaviate.client.v1.data.model.WeaviateObject
 import org.slf4j.LoggerFactory
-import java.io.IOException
 import org.springframework.stereotype.Service
+import java.io.IOException
 
 @Service
 class QueryBuilder(

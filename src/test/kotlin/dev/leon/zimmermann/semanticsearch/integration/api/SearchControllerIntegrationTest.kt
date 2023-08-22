@@ -2,15 +2,12 @@ package dev.leon.zimmermann.semanticsearch.integration.api
 
 import io.restassured.RestAssured.*
 import io.restassured.matcher.RestAssuredMatchers.*
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.impl.client.HttpClientBuilder
 import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
-import org.slf4j.LoggerFactory
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.context.ActiveProfiles

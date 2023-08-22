@@ -1,5 +1,7 @@
-package dev.leon.zimmermann.semanticsearch
+package dev.leon.zimmermann.semanticsearch.configuration
 
+import dev.leon.zimmermann.semanticsearch.DataService
+import dev.leon.zimmermann.semanticsearch.DatabaseClient
 import dev.leon.zimmermann.semanticsearch.integration.client.ClientManager
 import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService
 import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor

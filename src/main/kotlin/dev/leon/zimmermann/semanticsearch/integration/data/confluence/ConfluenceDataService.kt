@@ -13,9 +13,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.nio.charset.Charset
-import java.util.stream.Collectors
 import java.util.stream.Stream
-import kotlin.streams.asSequence
 
 
 class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: TextPreprocessor) :
