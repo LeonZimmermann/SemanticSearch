@@ -1,8 +1,10 @@
 package dev.leon.zimmermann.semanticsearch.integration.api
 
+import io.restassured.RestAssured.*
+import io.restassured.matcher.RestAssuredMatchers.*
 import org.apache.http.client.methods.HttpPost
-import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClientBuilder
+import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -20,8 +22,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @ActiveProfiles("test")
 internal class SearchControllerIntegrationTest {
 
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     @LocalServerPort
     private lateinit var port: String
 
@@ -30,22 +30,20 @@ internal class SearchControllerIntegrationTest {
     @BeforeAll
     fun setup() {
         baseUrl = "http://localhost:$port"
-        val request = HttpPost("$baseUrl/initialize")
-        val result = HttpClientBuilder.create()
-            .build()
-            .execute(request)
-        logger.debug(result.toString())
-        assertEquals(200, result.statusLine.statusCode)
+        post("$baseUrl/initialize")
+            .then()
+            .statusCode(200)
     }
 
     @Test
     fun testSearch() {
-        val request = HttpPost("$baseUrl/search")
-            .apply { entity = StringEntity("vorgänge und aufträge") }
-        val result = HttpClientBuilder.create()
-            .build()
-            .execute(request)
-            .statusLine.statusCode
-        assertEquals(200, result)
+        with()
+            .body("vorgänge und aufträge")
+            .`when`()
+            .post("$baseUrl/search")
+            .then()
+            .statusCode(200)
+            .assertThat()
+            .body("title", containsInAnyOrder("vorgänge & aufträge - projekt mdk branchensoftware"))
     }
 }

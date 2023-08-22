@@ -46,6 +46,7 @@ dependencies {
     implementation("org.apache.opennlp:opennlp-tools:2.2.0")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:1.9.0")
+    testImplementation("io.rest-assured:rest-assured:5.3.0")
     testImplementation(kotlin("test"))
 }
 
