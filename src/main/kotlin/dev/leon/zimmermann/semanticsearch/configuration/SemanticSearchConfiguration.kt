@@ -4,7 +4,9 @@ import dev.leon.zimmermann.semanticsearch.DataService
 import dev.leon.zimmermann.semanticsearch.DatabaseClient
 import dev.leon.zimmermann.semanticsearch.integration.client.ClientManager
 import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService
+import dev.leon.zimmermann.semanticsearch.integration.data.tutorial.TutorialDataService
 import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
+import dev.leon.zimmermann.semanticsearch.preprocessors.impl.DefaultTextPreprocessor
 import dev.leon.zimmermann.semanticsearch.preprocessors.impl.IdentityTextPreprocessor
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -26,14 +28,23 @@ class SemanticSearchConfiguration : WebMvcConfigurer {
     }
 
     @Bean
-    fun textPreprocessor(): TextPreprocessor {
-        return IdentityTextPreprocessor()
-        //return DefaultTextPreprocessor("/stop_words_german.txt")
+    fun textPreprocessor(searchConfiguration: SearchConfiguration): TextPreprocessor {
+        return if (searchConfiguration.preprocess) {
+            DefaultTextPreprocessor("/stop_words_german.txt")
+        } else {
+            IdentityTextPreprocessor()
+        }
     }
 
     @Bean
-    fun dataService(dataConfiguration: DataConfiguration): DataService {
-        //return TutorialDataService()
-        return ConfluenceDataService(dataConfiguration.path, textPreprocessor())
+    fun dataService(
+        dataConfiguration: DataConfiguration,
+        searchConfiguration: SearchConfiguration
+    ): DataService {
+        return if (dataConfiguration.path.isEmpty()) {
+            TutorialDataService()
+        } else {
+            ConfluenceDataService(dataConfiguration.path, textPreprocessor(searchConfiguration))
+        }
     }
 }

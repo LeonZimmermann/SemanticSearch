@@ -37,6 +37,7 @@ class DefaultTextPreprocessor(stopwordsFile: String): TextPreprocessor {
 
     private fun tokenizeAndStem(text: String) =
         SimpleTokenizer.INSTANCE.tokenize(text)
+            .filter { !it.isNullOrEmpty()}
             .map { porterStemmer.stem(it) }
             .distinct()
             .toList()

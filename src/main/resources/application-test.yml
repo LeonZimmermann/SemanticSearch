@@ -2,14 +2,10 @@ spring:
   config:
     activate:
       on-profile: test
-management:
-  endpoints:
-    web:
-      exposure:
-        include: '*'
-server:
-  port: 80
 weaviate:
   hostname: 'localhost'
   port: '2000'
-data.path: 'testdata'
+search:
+  alpha: 0f
+  preprocess: true
+data.path: 'mdk-full-study'

@@ -12,4 +12,7 @@ server:
 weaviate:
   hostname: 'weaviate'
   port: '2000'
+search:
+  alpha: 0.5
+  preprocess: true
 data.path: 'data/sites'

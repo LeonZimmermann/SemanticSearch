@@ -3,7 +3,7 @@
 /build
 /data
 /mdk
-/mdk-min
+/mdk-full-study
 /testdata
 src/test/resources/comparison.csv
-/result.csv
+/result*.csv

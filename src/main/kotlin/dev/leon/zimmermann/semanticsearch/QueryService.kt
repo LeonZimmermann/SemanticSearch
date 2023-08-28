@@ -1,18 +1,18 @@
 package dev.leon.zimmermann.semanticsearch
 
 import com.google.gson.internal.LinkedTreeMap
+import dev.leon.zimmermann.semanticsearch.configuration.SearchConfiguration
 import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService
-import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
 import io.weaviate.client.v1.data.model.WeaviateObject
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.IOException
 
 @Service
-class QueryBuilder(
+class QueryService(
     private val databaseClient: DatabaseClient,
     private val dataService: DataService,
-    private val textPreprocessor: TextPreprocessor,
+    private val searchConfiguration: SearchConfiguration,
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass.toString())
@@ -44,7 +44,7 @@ class QueryBuilder(
                       limit: $numberOfResults
                       hybrid: {
                         query: $concepts
-                        alpha: 0.25
+                        alpha: ${searchConfiguration.alpha}
                       }
                 ) {
                   ${dataService.getDatabaseScheme().properties.joinToString("\n") { it.name }}

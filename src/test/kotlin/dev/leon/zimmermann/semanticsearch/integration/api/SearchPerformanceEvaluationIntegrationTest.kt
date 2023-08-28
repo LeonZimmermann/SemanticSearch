@@ -36,7 +36,9 @@ internal class SearchPerformanceEvaluationIntegrationTest {
         resultFile.writer().use { resultWriter ->
             initializeDatabase()
             val inputFile = getInputFile()
+            resultWriter.appendLine("Anwendungsfall;Bereich;Sucheingabe;Erwartetes Dokument;Gefundene Dokumente;Hit;Hit in Five;Hit in Three; Hit in One")
             inputFile.readLines()
+                .filterIndexed { index, _ -> index > 0 }
                 .map { it.split(";") }
                 .forEach { inputs ->
                     val usecase = inputs[0]
@@ -53,7 +55,13 @@ internal class SearchPerformanceEvaluationIntegrationTest {
                         val hit5 = titleList5.any { it.trim().startsWith(expectedDocument, true) }
                         val hit3 = titleList3.any { it.trim().startsWith(expectedDocument, true) }
                         val hit1 = firstTitle.trim().startsWith(expectedDocument, true)
-                        resultWriter.appendLine("$usecase;$region;$search;$expectedDocument;${titleList.joinToString(",")};$hit;$hit5;$hit3;$hit1")
+                        resultWriter.appendLine(
+                            "$usecase;$region;$search;$expectedDocument;${
+                                titleList.joinToString(
+                                    ","
+                                )
+                            };$hit;$hit5;$hit3;$hit1"
+                        )
                     }
                 }
         }
