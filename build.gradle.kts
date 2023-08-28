@@ -37,7 +37,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
 
     // Weaviate Client
-    implementation("io.weaviate:client:4.0.1")
+    implementation("io.weaviate:client:4.3.0")
 
     // JSoup
     implementation("org.jsoup:jsoup:1.11.3")

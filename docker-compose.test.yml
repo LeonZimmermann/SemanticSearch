@@ -29,6 +29,6 @@ services:
     environment:
       ENABLE_CUDA: 0
   qna-transformers:
-    image: semitechnologies/qna-transformers:bert-large-uncased-whole-word-masking-finetuned-squad
+    image: electra-qna
     environment:
       ENABLE_CUDA: 0

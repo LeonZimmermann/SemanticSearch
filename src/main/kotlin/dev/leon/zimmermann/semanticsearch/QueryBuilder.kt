@@ -1,6 +1,7 @@
 package dev.leon.zimmermann.semanticsearch
 
 import com.google.gson.internal.LinkedTreeMap
+import dev.leon.zimmermann.semanticsearch.integration.data.confluence.ConfluenceDataService
 import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
 import io.weaviate.client.v1.data.model.WeaviateObject
 import org.slf4j.LoggerFactory
@@ -95,6 +96,7 @@ class QueryBuilder(
                 ${dataService.getDatabaseScheme().className}(
                   ask: {
                     question: "$question",
+                    properties: ["${ConfluenceDataService.PARAGRAPH_TAG}"]
                     rerank: true
                   },
                   limit: 1
