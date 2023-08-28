@@ -5,3 +5,5 @@
 /mdk
 /mdk-min
 /testdata
+src/test/resources/comparison.csv
+/result.csv
