@@ -3,13 +3,15 @@ package dev.leon.zimmermann.semanticsearch.preprocessors.impl
 import dev.leon.zimmermann.semanticsearch.preprocessors.TextPreprocessor
 import opennlp.tools.stemmer.PorterStemmer
 import opennlp.tools.tokenize.SimpleTokenizer
-import java.nio.charset.Charset
+import org.slf4j.LoggerFactory
 import java.util.stream.Collectors
 
-class DefaultTextPreprocessor(stopwordsFile: String): TextPreprocessor {
+class DefaultTextPreprocessor(stopwordsFile: String) : TextPreprocessor {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     private val stopwords: List<String> =
-        javaClass.getResource(stopwordsFile)?.readText(Charset.defaultCharset())?.split("\n")
+        javaClass.getResource(stopwordsFile)?.readText(Charsets.UTF_8)?.split("\n")
             ?.map { it.trim() }
             ?.toList()
             ?: throw RuntimeException("Could not find stopwords file (\"$stopwordsFile\")")
@@ -37,8 +39,15 @@ class DefaultTextPreprocessor(stopwordsFile: String): TextPreprocessor {
 
     private fun tokenizeAndStem(text: String) =
         SimpleTokenizer.INSTANCE.tokenize(text)
-            .filter { !it.isNullOrEmpty()}
-            .map { porterStemmer.stem(it) }
+            .filter { !it.isNullOrEmpty() }
+            .mapNotNull {
+                try {
+                    porterStemmer.stem(it)
+                } catch (exception: ArrayIndexOutOfBoundsException) {
+                    logger.error("Error stemming token \"$it\"")
+                    null
+                }
+            }
             .distinct()
             .toList()
 }

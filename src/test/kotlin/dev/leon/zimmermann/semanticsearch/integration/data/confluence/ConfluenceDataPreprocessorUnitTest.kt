@@ -8,7 +8,6 @@ import dev.leon.zimmermann.semanticsearch.preprocessors.impl.IdentityTextPreproc
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import java.nio.charset.Charset
 
 internal class ConfluenceDataPreprocessorUnitTest {
 
@@ -16,7 +15,7 @@ internal class ConfluenceDataPreprocessorUnitTest {
     fun testApplySimple() {
         val textPreprocessor = IdentityTextPreprocessor()
         val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
-        val input = javaClass.getResource("/test.html").readText(Charset.defaultCharset())
+        val input = javaClass.getResource("/test.html").readText(Charsets.UTF_8)
         val result = confluenceDataPreprocessor.apply(input)!!
         assertEquals("test", result[TITLE_TAG])
         assertEquals("test-titel", result[H1_TAG])
@@ -28,7 +27,7 @@ internal class ConfluenceDataPreprocessorUnitTest {
     fun testNoContent() {
         val textPreprocessor = IdentityTextPreprocessor()
         val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
-        val input = javaClass.getResource("/test-no-content.html").readText(Charset.defaultCharset())
+        val input = javaClass.getResource("/test-no-content.html").readText(Charsets.UTF_8)
         assertNull(confluenceDataPreprocessor.apply(input))
     }
 
@@ -36,7 +35,7 @@ internal class ConfluenceDataPreprocessorUnitTest {
     fun testApplyRealistic() {
         val textPreprocessor = IdentityTextPreprocessor()
         val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
-        val input = javaClass.getResource("/Auftragsliste_exportieren.html").readText(Charset.defaultCharset())
+        val input = javaClass.getResource("/Auftragsliste_exportieren.html").readText(Charsets.UTF_8)
         val result = confluenceDataPreprocessor.apply(input)!!
         assertEquals("auftragsliste exportieren - dokumentation", result[TITLE_TAG])
         assertEquals("auftragsliste erzeugen benutzeroberfläche des unterbereichs auftragsliste exportieren", result[H1_TAG])

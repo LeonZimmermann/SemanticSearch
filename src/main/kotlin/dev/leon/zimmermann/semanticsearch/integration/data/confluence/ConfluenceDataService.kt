@@ -12,7 +12,6 @@ import io.weaviate.client.v1.schema.model.WeaviateClass
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
-import java.nio.charset.Charset
 import java.util.stream.Stream
 
 
@@ -39,7 +38,6 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
     private val confluenceDataPreprocessor = ConfluenceDataPreprocessor(textPreprocessor)
 
     override fun getData(): Stream<WeaviateObject> {
-        logger.debug(File(".").listFiles().map { it.name }.joinToString("\n"))
         val file = File(pathToFolder)
         if (!file.exists()) {
             throw IllegalArgumentException("File does not exist (\"$pathToFolder\")")
@@ -51,7 +49,7 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
             ?.filter { it.isFile }
             ?.parallelStream()
             ?.peek { logger.debug("reading file ${it.name} on Thread ${Thread.currentThread().name}") }
-            ?.map { it.toURI().path to it.readText(Charset.defaultCharset()) }
+            ?.map { it.toURI().path to it.readText(Charsets.UTF_8) }
             ?.map { it.first to confluenceDataPreprocessor.apply(it.second) }
             ?.filter { it.second != null }
             ?.map { it.first to it.second!! }
@@ -94,14 +92,15 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
             .build()
     }
 
-    override fun getMapOfData(sourceMap: LinkedTreeMap<String, String>): Map<String, String> = mapOf(
-        ID to (sourceMap[ID] ?: "").toString(),
-        DOCUMENT_URL to (sourceMap[DOCUMENT_URL] ?: "").toString(),
-        TITLE_TAG to (sourceMap[TITLE_TAG] ?: "").toString(),
-        H1_TAG to (sourceMap[H1_TAG] ?: "").toString(),
-        H2_TAG to (sourceMap[H2_TAG] ?: "").toString(),
-        PARAGRAPH_TAG to (sourceMap[PARAGRAPH_TAG] ?: "").toString(),
-    )
+    override fun getMapOfData(sourceMap: LinkedTreeMap<String, String>): Map<String, String> =
+        mapOf(
+            ID to (sourceMap[ID] ?: "").toString(),
+            DOCUMENT_URL to (sourceMap[DOCUMENT_URL] ?: "").toString(),
+            TITLE_TAG to (sourceMap[TITLE_TAG] ?: "").toString(),
+            H1_TAG to (sourceMap[H1_TAG] ?: "").toString(),
+            H2_TAG to (sourceMap[H2_TAG] ?: "").toString(),
+            PARAGRAPH_TAG to (sourceMap[PARAGRAPH_TAG] ?: "").toString(),
+        )
 
     private fun addUrlToProperties(pairOfUrlAndPropertyMap: Pair<String, Map<String, *>>): Map<String, Any?> {
         val map = pairOfUrlAndPropertyMap.second.toMutableMap()

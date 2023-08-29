@@ -8,6 +8,7 @@ import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClientBuilder
 import org.hamcrest.Matchers.*
 import org.json.JSONArray
+import org.json.JSONException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -15,16 +16,19 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
+import java.lang.Integer.min
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles("test")
+@TestPropertySource(properties = ["data.path=mdk-full-study"])
 internal class SearchPerformanceEvaluationIntegrationTest {
 
     @LocalServerPort
@@ -33,7 +37,7 @@ internal class SearchPerformanceEvaluationIntegrationTest {
     @Test
     fun evaluateSearchPerformance() {
         val resultFile = getResultFile()
-        resultFile.writer().use { resultWriter ->
+        resultFile.writer(Charsets.UTF_8).use { resultWriter ->
             initializeDatabase()
             val inputFile = getInputFile()
             resultWriter.appendLine("Anwendungsfall;Bereich;Sucheingabe;Erwartetes Dokument;Gefundene Dokumente;Hit;Hit in Five;Hit in Three; Hit in One")
@@ -48,13 +52,13 @@ internal class SearchPerformanceEvaluationIntegrationTest {
                     searchInputs.split(",").map { it.trim() }.forEach { search ->
                         val response = makeSearchRequest(search)
                         val titleList = getTitleListFromResponse(response)
-                        val titleList5 = titleList.subList(0, 5)
-                        val titleList3 = titleList.subList(0, 3)
-                        val firstTitle = titleList.first()
+                        val titleList5 = titleList.subList(0, min(5, titleList.size))
+                        val titleList3 = titleList.subList(0, min(3, titleList.size))
+                        val firstTitle = titleList.firstOrNull()
                         val hit = titleList.any { it.trim().startsWith(expectedDocument, true) }
                         val hit5 = titleList5.any { it.trim().startsWith(expectedDocument, true) }
                         val hit3 = titleList3.any { it.trim().startsWith(expectedDocument, true) }
-                        val hit1 = firstTitle.trim().startsWith(expectedDocument, true)
+                        val hit1 = firstTitle?.trim()?.startsWith(expectedDocument, true) ?: false
                         resultWriter.appendLine(
                             "$usecase;$region;$search;$expectedDocument;${
                                 titleList.joinToString(
@@ -100,12 +104,19 @@ internal class SearchPerformanceEvaluationIntegrationTest {
     }
 
     private fun getTitleListFromResponse(response: CloseableHttpResponse): List<String> {
-        val responseArray = JSONArray(
-            BufferedReader(InputStreamReader(response.entity.content)).readLines()
-                .joinToString()
-        )
-        return (0 until responseArray.length()).map { i ->
-            responseArray.getJSONObject(i).getString("title")
+        return try {
+            val responseString = BufferedReader(
+                InputStreamReader(
+                    response.entity.content,
+                    Charsets.UTF_8
+                )
+            ).readLines().joinToString()
+            val responseArray = JSONArray(responseString)
+            (0 until responseArray.length()).map { i ->
+                responseArray.getJSONObject(i).getString("title")
+            }
+        } catch (exception: JSONException) {
+            listOf("", "", "", "", "")
         }
     }
 }

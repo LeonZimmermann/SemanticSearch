@@ -6,6 +6,6 @@ weaviate:
   hostname: 'localhost'
   port: '2000'
 search:
-  alpha: 0f
+  alpha: 0.5f
   preprocess: true
-data.path: 'mdk-full-study'
+data.path: 'testdata'
