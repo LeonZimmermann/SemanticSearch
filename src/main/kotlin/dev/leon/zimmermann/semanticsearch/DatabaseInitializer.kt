@@ -1,5 +1,6 @@
 package dev.leon.zimmermann.semanticsearch
 
+import io.weaviate.client.base.WeaviateError
 import io.weaviate.client.v1.schema.model.Property
 import io.weaviate.client.v1.schema.model.WeaviateClass
 import org.slf4j.LoggerFactory
@@ -46,25 +47,23 @@ class DatabaseInitializer(
     }
 
     private fun clearDatabase() {
-        val response = databaseClient.client.schema().classDeleter()
-            .withClassName(dataService.getDatabaseScheme().className)
-            .run()
-        if (response.error != null) {
-            logger.error("Error ${response.error.statusCode}: ${response.error.messages}")
-        } else {
-            logger.debug("Successfully cleared database")
+        doWithRetry(3) {
+            databaseClient.client.schema().classDeleter()
+                .withClassName(dataService.getDatabaseScheme().className)
+                .run()
+                .error
         }
+        logger.debug("Successfully cleared database")
     }
 
     private fun initializeDatabaseScheme() {
-        val result = databaseClient.client.schema().classCreator()
-            .withClass(dataService.getDatabaseScheme())
-            .run()
-        if (result.error != null) {
-            throw IOException("Error ${result.error.statusCode}: ${result.error.messages}")
-        } else {
-            logger.debug("Successfully initialized database scheme")
+        doWithRetry(3) {
+            databaseClient.client.schema().classCreator()
+                .withClass(dataService.getDatabaseScheme())
+                .run()
+                .error
         }
+        logger.debug("Successfully initialized database scheme")
     }
 
     private fun readyClass(): WeaviateClass {
@@ -83,15 +82,29 @@ class DatabaseInitializer(
 
     private fun initializeData() {
         dataService.getData().forEach {
-            val result = databaseClient.client.batch()
-                .objectsBatcher()
-                .withObject(it)
-                .run()
-            if (result.error != null) {
-                throw IOException("Error ${result.error.statusCode}: ${result.error.messages}")
-            } else {
-                logger.debug("Successfully added ${it.id} to ${it.className}")
+            doWithRetry(3) {
+                databaseClient.client.batch()
+                    .objectsBatcher()
+                    .withObject(it)
+                    .run()
+                    .error
             }
+            logger.debug("Successfully added ${it.id} to ${it.className}")
+        }
+    }
+
+    private fun doWithRetry(maxRetries: Int, action: () -> WeaviateError?) {
+        var error: WeaviateError?
+        var retries = 0
+        do {
+            error = action()
+            if (error != null) {
+                retries++
+            }
+        } while (error != null && retries < maxRetries)
+        if (error != null) {
+            // TODO: Throw exception
+            logger.debug("Error ${error.statusCode}: ${error.messages}")
         }
     }
 
