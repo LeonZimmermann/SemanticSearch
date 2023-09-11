@@ -58,8 +58,8 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
             ?: throw IOException("Could not get files from directory (\"$pathToFolder\")")
     }
 
-    override fun getDatabaseScheme(): WeaviateClass {
-        return WeaviateClass.builder()
+    override fun getDatabaseSchemes(): Array<WeaviateClass> {
+        return arrayOf(WeaviateClass.builder()
             .className(DOCUMENT_CLASS)
             .properties(
                 dataServiceHelper.buildProperties(
@@ -89,7 +89,7 @@ class ConfluenceDataService(private val pathToFolder: String, textPreprocessor: 
                     .build()
             )
             .vectorizer(VECTORIZER)
-            .build()
+            .build())
     }
 
     override fun getMapOfData(sourceMap: LinkedTreeMap<String, String>): Map<String, String> =

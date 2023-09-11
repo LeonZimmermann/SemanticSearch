@@ -5,9 +5,7 @@ import dev.leon.zimmermann.semanticsearch.DatabaseClient
 import dev.leon.zimmermann.semanticsearch.DatabaseInitializer
 import dev.leon.zimmermann.semanticsearch.QueryService
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.io.File
 
 @RestController
@@ -22,16 +20,22 @@ class SearchController(
         DatabaseInitializer(databaseClient, dataService).initializeDatabase()
     }
 
-    @PostMapping("/search")
-    fun search(@RequestBody query: String): ResponseEntity<Array<Map<String, String>>> {
-        // TODO Validate query?
-        return ResponseEntity.ok(queryService.makeQuery(5, query))
+    @GetMapping("/search")
+    fun search(
+        @RequestParam("query") query: String,
+        @RequestParam("className") className: String,
+        @RequestParam("properties") properties: String
+    ): ResponseEntity<Array<Map<String, String>>> {
+        // TODO Validate inputs?
+        return ResponseEntity.ok(queryService.makeQuery(5, query, className, properties))
     }
 
     @PostMapping("/ask")
-    fun ask(@RequestBody question: String): ResponseEntity<String> {
-        // TODO Validate question?
-        return ResponseEntity.ok(queryService.askQuestion(question))
+    fun ask(@RequestParam("query") question: String,
+            @RequestParam("className") className: String,
+            @RequestParam("properties") properties: String): ResponseEntity<String> {
+        // TODO Validate inputs?
+        return ResponseEntity.ok(queryService.askQuestion(question, className, properties))
     }
 
     @PostMapping("/document")

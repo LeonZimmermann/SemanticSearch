@@ -47,23 +47,27 @@ class DatabaseInitializer(
     }
 
     private fun clearDatabase() {
-        doWithRetry(3) {
-            databaseClient.client.schema().classDeleter()
-                .withClassName(dataService.getDatabaseScheme().className)
-                .run()
-                .error
+        dataService.getDatabaseSchemes().forEach { databaseScheme ->
+            doWithRetry(3) {
+                databaseClient.client.schema().classDeleter()
+                    .withClassName(databaseScheme.className)
+                    .run()
+                    .error
+            }
+            logger.debug("Successfully cleared database scheme ${databaseScheme.className}")
         }
-        logger.debug("Successfully cleared database")
     }
 
     private fun initializeDatabaseScheme() {
-        doWithRetry(3) {
-            databaseClient.client.schema().classCreator()
-                .withClass(dataService.getDatabaseScheme())
-                .run()
-                .error
+        dataService.getDatabaseSchemes().forEach { databaseScheme ->
+            doWithRetry(3) {
+                databaseClient.client.schema().classCreator()
+                    .withClass(databaseScheme)
+                    .run()
+                    .error
+            }
+            logger.debug("Successfully initialized database scheme")
         }
-        logger.debug("Successfully initialized database scheme")
     }
 
     private fun readyClass(): WeaviateClass {

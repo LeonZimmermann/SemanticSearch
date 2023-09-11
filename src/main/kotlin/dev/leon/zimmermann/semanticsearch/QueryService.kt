@@ -17,9 +17,9 @@ class QueryService(
 
     private val logger = LoggerFactory.getLogger(javaClass.toString())
 
-    fun makeQuery(numberOfResults: Int, input: String): Array<Map<String, String>> {
+    fun makeQuery(numberOfResults: Int, input: String, className: String, properties: String): Array<Map<String, String>> {
         val concepts = "\"$input\""
-        val query = createQuery(numberOfResults, concepts)
+        val query = createQuery(numberOfResults, concepts, className, properties)
         logger.debug("Concepts: $concepts")
         logger.debug("Query: $query")
         val result = databaseClient.client.graphQL().raw().withQuery(query).run()
@@ -28,7 +28,7 @@ class QueryService(
         } else {
             if (result.result.data != null) {
                 println("Query result: ${result.result.data}")
-                return parseQueryResult(result.result.data)
+                return parseQueryResult(result.result.data, className)
                     .sortedByDescending { it["score"]?.toFloat() }
                     .toTypedArray()
             } else {
@@ -37,17 +37,17 @@ class QueryService(
         }
     }
 
-    private fun createQuery(numberOfResults: Int, concepts: String) = """
+    private fun createQuery(numberOfResults: Int, concepts: String, className: String, properties: String) = """
         {
             Get {
-                ${dataService.getDatabaseScheme().className}(
+                $className(
                       limit: $numberOfResults
                       hybrid: {
                         query: $concepts
                         alpha: ${searchConfiguration.alpha}
                       }
                 ) {
-                  ${dataService.getDatabaseScheme().properties.joinToString("\n") { it.name }}
+                  $properties
                   _additional {
                     score
                     explainScore
@@ -57,8 +57,8 @@ class QueryService(
         }
     """.trimIndent()
 
-    private fun parseQueryResult(queryResult: Any): Array<Map<String, String>> {
-        return ((queryResult as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)[dataService.getDatabaseScheme().className]
+    private fun parseQueryResult(queryResult: Any, className: String): Array<Map<String, String>> {
+        return ((queryResult as LinkedTreeMap<*, *>)["Get"] as LinkedTreeMap<*, List<*>>)[className]
             .orEmpty()
             .map { it as LinkedTreeMap<String, String> }
             .map {
@@ -76,9 +76,9 @@ class QueryService(
             .toTypedArray()
     }
 
-    fun getDataInClass(): List<WeaviateObject> {
+    fun getDataInClass(className: String): List<WeaviateObject> {
         val result = databaseClient.client.data().objectsGetter()
-            .withClassName(dataService.getDatabaseScheme().className)
+            .withClassName(className)
             .withVector()
             .run()
         if (result.error != null) {
@@ -89,11 +89,11 @@ class QueryService(
         }
     }
 
-    fun askQuestion(question: String): String {
+    fun askQuestion(question: String, className: String, properties: String): String {
         val result = databaseClient.client.graphQL().raw().withQuery("""
             {
               Get {
-                ${dataService.getDatabaseScheme().className}(
+                $className(
                   ask: {
                     question: "$question",
                     properties: ["${ConfluenceDataService.PARAGRAPH_TAG}"]
@@ -101,7 +101,7 @@ class QueryService(
                   },
                   limit: 1
                 ) {
-                  ${dataService.getDatabaseScheme().properties.joinToString("\n") { it.name }}
+                  $properties
                   _additional {
                     answer {
                       hasAnswer

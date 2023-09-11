@@ -40,8 +40,8 @@ class TutorialDataService : DataService {
             }.parallelStream()
     }
 
-    override fun getDatabaseScheme(): WeaviateClass {
-        return WeaviateClass.builder()
+    override fun getDatabaseSchemes(): Array<WeaviateClass> {
+        return arrayOf(WeaviateClass.builder()
             .className("Question")
             .properties(
                 dataServiceHelper.buildProperties(
@@ -65,7 +65,7 @@ class TutorialDataService : DataService {
                     .build())
                 .build())
             .vectorizer("text2vec-transformers")
-            .build()
+            .build())
     }
 
     override fun getMapOfData(sourceMap: LinkedTreeMap<String, String>) = mapOf(

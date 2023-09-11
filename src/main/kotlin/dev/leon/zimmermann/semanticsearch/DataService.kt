@@ -8,6 +8,6 @@ import java.util.stream.Stream
 
 interface DataService {
     fun getData(): Stream<WeaviateObject>
-    fun getDatabaseScheme(): WeaviateClass
+    fun getDatabaseSchemes(): Array<WeaviateClass>
     fun getMapOfData(sourceMap: LinkedTreeMap<String, String>): Map<String, String>
 }

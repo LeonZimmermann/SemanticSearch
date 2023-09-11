@@ -2,6 +2,7 @@ package dev.leon.zimmermann.semanticsearch.integration.api
 
 import io.restassured.RestAssured.*
 import io.restassured.matcher.RestAssuredMatchers.*
+import org.apache.catalina.util.URLEncoder
 import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
@@ -34,10 +35,14 @@ internal class SearchControllerIntegrationTest {
 
     @Test
     fun testSearch() {
+        val queryParams = URLEncoder().encode(
+            "query=vorgänge und aufträge&className=Document&properties=title",
+            Charsets.UTF_8
+        )
         with()
             .body("vorgänge und aufträge")
             .`when`()
-            .post("$baseUrl/search")
+            .get("$baseUrl/search?$queryParams")
             .then()
             .statusCode(200)
             .assertThat()
